@@ -1,5 +1,6 @@
 package ru.spbstu.competition.game
 
+import com.dekinci.bot.entities.RiverState
 import ru.spbstu.competition.protocol.Protocol
 
 class Intellect(val state: State, val protocol: Protocol) {

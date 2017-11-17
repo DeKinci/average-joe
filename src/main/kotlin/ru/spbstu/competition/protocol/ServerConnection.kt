@@ -5,7 +5,7 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.Socket
 
-class ServerConnection(val url: String, val port: Int) {
+class ServerConnection(url: String, port: Int) {
 
     // Для связи с сервером для начала нужно создать сокет
     private val socket = Socket(url, port)
@@ -33,7 +33,7 @@ class ServerConnection(val url: String, val port: Int) {
     inline fun <reified T> receiveJson(): T {
         val lengthChars = mutableListOf<Char>()
         var ch = '0'
-        while(ch != ':') {
+        while (ch != ':') {
             lengthChars += ch
             ch = sin.read().toChar()
         }

@@ -1,10 +1,9 @@
 package ru.spbstu.competition.game
 
+import com.dekinci.bot.entities.RiverState
+import com.dekinci.bot.entities.River
 import ru.spbstu.competition.protocol.data.Claim
-import ru.spbstu.competition.protocol.data.River
 import ru.spbstu.competition.protocol.data.Setup
-
-enum class RiverState{ Our, Enemy, Neutral }
 
 class State {
     val rivers = mutableMapOf<River, RiverState>()

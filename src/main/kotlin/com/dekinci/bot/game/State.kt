@@ -1,10 +1,12 @@
-package com.dekinci.bot
+package com.dekinci.bot.game
 
+import com.dekinci.bot.entities.RiverState
+import com.dekinci.bot.utility.IDManager
 import ru.spbstu.competition.protocol.data.Claim
 import ru.spbstu.competition.protocol.data.Setup
 
 class State(setup: Setup) {
-    val rivers = RiverMap(setup.map.sites, setup.map.rivers)
+    var rivers = RiverMap(IDManager.maxID, setup.map.rivers)
     var mines = ArrayList<Int>(50)
     var myId = -1
 

@@ -2,7 +2,7 @@ package ru.spbstu.competition.protocol
 
 import ru.spbstu.competition.protocol.data.*
 
-class Protocol(val connection: ServerConnection) {
+class Protocol(private val connection: ServerConnection) {
     constructor(url: String, port: Int): this(ServerConnection(url, port))
 
     // После прописывания всех наших типов данных в Messages.kt
