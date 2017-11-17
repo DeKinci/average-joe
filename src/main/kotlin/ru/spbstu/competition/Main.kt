@@ -2,10 +2,10 @@ package ru.spbstu.competition
 
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
-import ru.spbstu.competition.game.Intellect
-import ru.spbstu.competition.game.State
 import ru.spbstu.competition.protocol.Protocol
 import ru.spbstu.competition.protocol.data.*
+
+import com.dekinci.bot.*
 
 object Arguments {
     @Option(name = "-u", usage = "Specify server url")
@@ -15,32 +15,30 @@ object Arguments {
     var port: Int = -1
 
     fun use(args: Array<String>): Arguments =
-            CmdLineParser(this).parseArgument(*args).let{ this }
+            CmdLineParser(this).parseArgument(*args).let { this }
 }
 
 fun main(args: Array<String>) {
     Arguments.use(args)
 
-    println("Hi, I am Average Joe, the ultimate punter!")
+    println("Hi, I am Matrixed Joe, the ultimate punter!")
 
     // Протокол обмена с сервером
     val protocol = Protocol(Arguments.url, Arguments.port)
-    // Состояние игрового поля
-    val gameState = State()
-    // Джо очень умный чувак, вот его ум
-    val intellect = Intellect(gameState, protocol)
 
-    protocol.handShake("Average Joe, yo!")
+    protocol.handShake("Matrixed Joe, yo!")
     val setupData = protocol.setup()
-    gameState.init(setupData)
+
+    val gameState = State(setupData)
+    val intellect = Intellect(gameState, protocol)
 
     println("Received id = ${setupData.punter}")
 
     protocol.ready()
 
-    gameloop@ while(true) {
+    gameloop@ while (true) {
         val message = protocol.serverMessage()
-        when(message) {
+        when (message) {
             is GameResult -> {
                 println("The game is over!")
                 val myScore = message.stop.scores[protocol.myId]
@@ -51,9 +49,10 @@ fun main(args: Array<String>) {
                 println("Joe too slow =(")
             }
             is GameTurnMessage -> {
-                for(move in message.move.moves) {
-                    when(move) {
-                        is PassMove -> {}
+                for (move in message.move.moves) {
+                    when (move) {
+                        is PassMove -> {
+                        }
                         is ClaimMove -> gameState.update(move.claim)
                     }
                 }

@@ -8,7 +8,7 @@ import java.net.Socket
 class ServerConnection(val url: String, val port: Int) {
 
     // Для связи с сервером для начала нужно создать сокет
-    private val socket = Socket(url, port.toInt())
+    private val socket = Socket(url, port)
 
     // Потом из сокета можно получить потоки ввода и вывода, и работать с ним, как с файлом
     // В нашей задаче можно сделать BufferedReader/PrintWriter, потому что протокол текстовый
