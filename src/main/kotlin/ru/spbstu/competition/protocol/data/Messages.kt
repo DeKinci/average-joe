@@ -1,6 +1,6 @@
 package ru.spbstu.competition.protocol.data
 
-import com.dekinci.bot.entities.Site
+import com.dekinci.bot.entities.CommonSite
 import com.dekinci.bot.entities.River
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.databind.JsonNode
@@ -12,7 +12,7 @@ import ru.spbstu.competition.protocol.objectMapper
 data class HandshakeRequest(val me: String)
 data class HandshakeResponse(val you: String)
 
-data class Map(val sites: List<Site>, val rivers: List<River>, val mines: List<Int>)
+data class Map(val sites: List<CommonSite>, val rivers: List<River>, val mines: List<Int>)
 data class Setup(val punter: Int, val punters: Int, val map: Map, val settings: JsonNode?)
 
 data class Ready(val ready: Int)
