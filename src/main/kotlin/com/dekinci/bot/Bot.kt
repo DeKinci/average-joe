@@ -1,12 +1,12 @@
 package com.dekinci.bot
 
-import com.dekinci.bot.game.JoeIntellect
+import com.dekinci.bot.game.Intellect
 import com.dekinci.bot.game.State
 import ru.spbstu.competition.protocol.Protocol
 import ru.spbstu.competition.protocol.data.*
 
-class Bot(val name: String, val protocol: Protocol) : Runnable {
-    private var intellect: JoeIntellect? = null
+class Bot(private val name: String, val protocol: Protocol) : Runnable {
+    private var intellect: Intellect? = null
     private var gameState: State? = null
 
     override fun run() {
@@ -19,12 +19,15 @@ class Bot(val name: String, val protocol: Protocol) : Runnable {
 
         protocol.handShake("$name, sup!")
         val setupData = protocol.setup()
+        println("setup passed with " +
+                setupData.map.sites.size + " nodes, " +
+                setupData.map.rivers.size + " rivers and " +
+                setupData.map.mines.size + " mines")
 
-        println("initializing state...")
         gameState = State(setupData)
 
         println("state initialized, working on intellect...")
-        intellect = JoeIntellect(gameState!!)
+        intellect = Intellect(gameState!!)
 
         println("Received id = ${setupData.punter}")
 

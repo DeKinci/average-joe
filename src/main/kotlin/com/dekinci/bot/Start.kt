@@ -18,7 +18,7 @@ object Arguments {
 fun main(args: Array<String>) {
     Arguments.use(args)
 
-    val name = "Matrix Jock"
+    val name = "Budding Jack"
     val protocol = Protocol(Arguments.url, Arguments.port)
 
     Thread(Bot(name, protocol)).start()
