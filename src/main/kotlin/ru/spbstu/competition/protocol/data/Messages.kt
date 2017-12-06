@@ -3,6 +3,8 @@ package ru.spbstu.competition.protocol.data
 import com.dekinci.bot.entities.CommonSite
 import com.dekinci.bot.entities.River
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.JsonNode
 import ru.spbstu.competition.protocol.objectMapper
 
@@ -49,18 +51,23 @@ data class GameStop(val moves: List<Move>, val scores: List<Score>)
 data class GameResult(val stop: GameStop): ServerMessage()
 data class Timeout(val timeout: Double): ServerMessage()
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+class Staff: ServerMessage()
+
 sealed class ServerMessage {
 
     // Библиотека Jackson написана на Java, поэтому требует, чтобы функции нестандартной конверсии из JSON
     // были статическими, в Kotlin этого можно добиться с помощью аннотации @JvmStatic внутри companion object
     companion object {
         @JvmStatic
+        @Synchronized
         @JsonCreator
         fun factory(map: kotlin.collections.Map<String, Any>): ServerMessage {
             return when {
                 "move" in map -> objectMapper.convertValue(map, GameTurnMessage::class.java)
                 "stop" in map -> objectMapper.convertValue(map, GameResult::class.java)
                 "timeout" in map -> objectMapper.convertValue(map, Timeout::class.java)
+                "map" in map -> objectMapper.convertValue(map, Staff::class.java)
                 else -> throw IllegalArgumentException()
             }
         }

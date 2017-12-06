@@ -1,5 +1,7 @@
 package com.dekinci.bot
 
+import com.dekinci.connection.Connection
+import com.dekinci.testbot.TestBot
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
 import ru.spbstu.competition.protocol.Protocol
@@ -19,7 +21,21 @@ fun main(args: Array<String>) {
     Arguments.use(args)
 
     val name = "Budding Jack"
-    val protocol = Protocol(Arguments.url, Arguments.port)
+    val connection = Connection(Arguments.url, Arguments.port)
 
-    Thread(Bot(name, protocol)).start()
+    val jack = Bot(name, connection)
+
+    Thread(jack).start()
+    dummyfier2000(jack, connection)
+}
+
+fun dummyfier2000(bot: Bot, connection: Connection) {
+    Thread {
+        Thread.sleep(2000)
+        while (!bot.isPlaying) {
+            println("Adding dummy!")
+            Thread(TestBot(connection)).start()
+            Thread.sleep(2000)
+        }
+    }.start()
 }

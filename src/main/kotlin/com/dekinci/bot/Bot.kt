@@ -2,12 +2,20 @@ package com.dekinci.bot
 
 import com.dekinci.bot.game.Intellect
 import com.dekinci.bot.game.State
+import com.dekinci.bot.game.player.PlayersManager
+import com.dekinci.connection.Connection
 import ru.spbstu.competition.protocol.Protocol
 import ru.spbstu.competition.protocol.data.*
 
-class Bot(private val name: String, val protocol: Protocol) : Runnable {
+open class Bot(private val name: String, connection: Connection) : Runnable {
     private var intellect: Intellect? = null
     private var gameState: State? = null
+    private var manager: PlayersManager? = null
+
+    private val protocol = Protocol(connection.url, connection.port)
+
+    @Volatile
+    var isPlaying = false
 
     override fun run() {
         initialize()
@@ -25,17 +33,18 @@ class Bot(private val name: String, val protocol: Protocol) : Runnable {
                 setupData.map.mines.size + " mines")
 
         gameState = State(setupData)
+        manager = PlayersManager(gameState!!.gameMap, setupData.punters)
 
-        println("state initialized, working on intellect...")
+        println("state and manager initialized, working on intellect...")
         intellect = Intellect(gameState!!)
 
         println("Received id = ${setupData.punter}")
 
         protocol.ready()
+        isPlaying = true
     }
 
     private fun playAGame() {
-        var isPlaying = true
         while (isPlaying) {
             val message = protocol.serverMessage()
 

@@ -1,7 +1,6 @@
-package com.dekinci.bot.game.scoring
+package com.dekinci.bot.game.player
 
 import com.dekinci.bot.game.map.GameMap
-import com.dekinci.bot.game.player.Player
 
 class PlayersManager(private val map: GameMap, playersAmount: Int) {
     private val players = ArrayList<Player>(playersAmount)
