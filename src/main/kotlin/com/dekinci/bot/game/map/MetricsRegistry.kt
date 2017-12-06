@@ -7,7 +7,7 @@ import kotlin.collections.HashSet
 
 class MetricsRegistry(sitesAmount: Int, totalList: AdjacencyList, mines: List<Int>) {
     val weights: ConcurrentHashMap<Int, IntArray> = ConcurrentHashMap(mines.size)
-    ///////////////////////////////Mine/////////Site/Weight///////////////////////////////
+    ///////////////////////////////Mine/Site/Weight///////////////////////////////
     var mineConnections = ConcurrentHashMap<Int, Int>(mines.size)
     var mineCost = ConcurrentHashMap<Int, Int>(mines.size)
 
