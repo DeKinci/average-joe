@@ -39,38 +39,4 @@ public class Dijkstra {
 
         return dist;
     }
-
-    public static void main(String[] args) throws IOException {
-        test();
-    }
-
-    private static void test() {//TODO: REMOVE
-        int vertexAmount = 7;
-        int start = 0;
-
-        ArrayList<ArrayList<Integer>> adjacencyList = new ArrayList<>(vertexAmount);
-        for (int i = 0; i < vertexAmount; ++i)
-            adjacencyList.add(new ArrayList<>());
-
-        String[] data = "6 7 2 4 1 2 1 3 2 5 3 2 3 5 4 5 5 3 5 4 7 6 1 3".split(" ");
-        int edgeAmount = 11;
-
-        for (int i = 0; i < edgeAmount; i += 2)
-            adjacencyList
-                    .get(Integer.parseInt(data[i]) - 1)
-                    .add(Integer.parseInt(data[i + 1]) - 1);
-
-        Dijkstra.init(vertexAmount, adjacencyList);
-
-        Dijkstra dijkstra = new Dijkstra();
-        printData(dijkstra.sparse(start));
-    }
-
-    private static void printData(int dist[]) {
-        for (int v : dist)
-            if (v != INF)
-                System.out.print((v + " "));
-            else
-                System.out.print("-1 ");
-    }
 }

@@ -4,7 +4,7 @@ import com.dekinci.connection.Connection
 import com.dekinci.testbot.TestBot
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
-import ru.spbstu.competition.protocol.Protocol
+import java.net.ConnectException
 
 object Arguments {
     @Option(name = "-u", usage = "Specify server url")
@@ -31,11 +31,22 @@ fun main(args: Array<String>) {
 
 fun dummyfier2000(bot: Bot, connection: Connection) {
     Thread {
-        Thread.sleep(2000)
-        while (!bot.isPlaying) {
-            println("Adding dummy!")
-            Thread(TestBot(connection)).start()
+        while (true) {
             Thread.sleep(2000)
+            if (bot.isPlaying)
+                break
+            addDummy(connection)
         }
     }.start()
+}
+
+fun addDummy(connection: Connection) {
+    try {
+        Thread(TestBot(connection)).also {
+            it.isDaemon = true
+            it.start()
+        }
+    } catch (e: ConnectException) {
+        System.err.println("Dummy connection error")
+    }
 }

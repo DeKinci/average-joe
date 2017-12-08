@@ -6,7 +6,7 @@ import ru.spbstu.competition.protocol.data.Claim
 import ru.spbstu.competition.protocol.data.Setup
 import java.util.*
 
-class State(private val setup: Setup) {
+class GameState(private val setup: Setup) {
     val gameMap = GameMap(IDManager.maxID + 1, setup.map.rivers, setup.map.mines)
 
     companion object {
@@ -28,9 +28,9 @@ class State(private val setup: Setup) {
         }
     }
 
-    fun update(claim: Claim) = claimRiver(claim, claim.punter)
+    fun update(claim: Claim) = claimRiver(claim)
 
-    private fun claimRiver(claim: Claim, state: Int) {
-        gameMap.riverAdjMatrix.matrix[claim.source, claim.target] = state
+    private fun claimRiver(claim: Claim) {
+        gameMap.claim(claim.source, claim.target, claim.punter)
     }
 }

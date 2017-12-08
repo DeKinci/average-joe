@@ -25,4 +25,6 @@ class AdjacencyList(vertexAmount: Int) {
     fun removeEdge(from: Int, to: Int) {
         list[from].remove(to)
     }
+
+    operator fun get(from: Int): Collection<Int> = list[from]
 }

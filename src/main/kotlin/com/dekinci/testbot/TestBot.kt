@@ -10,21 +10,31 @@ class TestBot(connection: Connection) : Runnable {
     override fun run() {
         initialize()
         playAGame()
+        println("Dummy at ${Thread.currentThread().id} died")
     }
 
     private fun initialize() {
         protocol.handShake("Dummy")
+        protocol.setup()
         protocol.ready()
+        println("Added dummy on id ${protocol.myId} with thread ${Thread.currentThread().id}")
     }
 
     private fun playAGame() {
         var gameIsOn = true
-        while (gameIsOn) {
-            val message = protocol.serverMessage()
-            when (message) {
-                is GameResult -> gameIsOn = false
+
+        try {
+            while (gameIsOn) {
+                val message = protocol.serverMessage()
+                when (message) {
+                    is GameResult -> gameIsOn = false
+                }
+                println("Dummy passes")
+                protocol.passMove()
             }
-            protocol.passMove()
+        }
+        finally {
+            println("Dummy at ${Thread.currentThread().id} died violently")
         }
     }
 }

@@ -1,18 +1,35 @@
 package com.dekinci.bot.game.map
 
 import com.dekinci.bot.entities.River
+import com.dekinci.bot.entities.RiverStateID
 import com.dekinci.bot.game.map.graphstuff.AdjacencyList
 import com.dekinci.bot.game.map.graphstuff.AdjacencyMatrix
 import java.util.*
+import kotlin.collections.HashSet
 
 class GameMap(size: Int, rivers: List<River>, mines: List<Int>) {
-    val riverAdjMatrix = AdjacencyMatrix(size, rivers)
-    val totalList = AdjacencyList(size, rivers)
-    val weightsRegistry = MetricsRegistry(size, totalList, mines)
+    private val adjMatrix = AdjacencyMatrix(size, rivers)
+    private val adjList = AdjacencyList(size, rivers)
+    private val minesSet = mines.toHashSet()
 
-    fun hasFreeConnections(site: Int): Boolean = riverAdjMatrix.hasFreeConnections(site)
+    val weightsRegistry = MetricsRegistry(size, adjList, mines)
+    val minesClusters = TreeSet<HashSet<Int>>(Comparator { first, second -> first.size.compareTo(second.size) })
 
-    fun isSiteConnectedWithAny(first: Int, others: List<Int>) = !Collections.disjoint(totalList.list[first], others)
+    fun hasFreeConnections(site: Int): Boolean = adjMatrix.hasFreeConnections(site)
 
-    fun isSiteConnectedWith(first: Int, second: Int) = totalList.list[first].contains(second)
+    fun isSiteConnectedWithAny(first: Int, others: List<Int>) = !Collections.disjoint(adjList[first], others)
+
+    fun isSiteConnectedWith(first: Int, second: Int) = adjList.list[first].contains(second)
+
+    fun getConnections(site: Int) = adjList[site]
+
+    fun getFreeConnections(site: Int): Collection<Int> {
+        return getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL }
+    }
+
+    fun isSiteMine(site: Int): Boolean = minesSet.contains(site)
+
+    fun claim(from: Int, to: Int, id: Int) {
+        adjMatrix[from, to] = id
+    }
 }

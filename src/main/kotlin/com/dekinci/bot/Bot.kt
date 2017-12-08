@@ -1,7 +1,7 @@
 package com.dekinci.bot
 
 import com.dekinci.bot.game.Intellect
-import com.dekinci.bot.game.State
+import com.dekinci.bot.game.GameState
 import com.dekinci.bot.game.player.PlayersManager
 import com.dekinci.connection.Connection
 import ru.spbstu.competition.protocol.Protocol
@@ -9,7 +9,7 @@ import ru.spbstu.competition.protocol.data.*
 
 open class Bot(private val name: String, connection: Connection) : Runnable {
     private var intellect: Intellect? = null
-    private var gameState: State? = null
+    private var gameState: GameState? = null
     private var manager: PlayersManager? = null
 
     private val protocol = Protocol(connection.url, connection.port)
@@ -20,6 +20,7 @@ open class Bot(private val name: String, connection: Connection) : Runnable {
     override fun run() {
         initialize()
         playAGame()
+        println("$name died")
     }
 
     private fun initialize() {
@@ -32,10 +33,8 @@ open class Bot(private val name: String, connection: Connection) : Runnable {
                 setupData.map.rivers.size + " rivers and " +
                 setupData.map.mines.size + " mines")
 
-        gameState = State(setupData)
-        manager = PlayersManager(gameState!!.gameMap, setupData.punters)
-
-        println("state and manager initialized, working on intellect...")
+        gameState = GameState(setupData)
+        manager = PlayersManager(gameState!!, setupData.punters)
         intellect = Intellect(gameState!!)
 
         println("Received id = ${setupData.punter}")
@@ -46,6 +45,7 @@ open class Bot(private val name: String, connection: Connection) : Runnable {
 
     private fun playAGame() {
         while (isPlaying) {
+            println("Getting new message")
             val message = protocol.serverMessage()
 
             when (message) {
@@ -61,10 +61,14 @@ open class Bot(private val name: String, connection: Connection) : Runnable {
                 is GameTurnMessage ->
                     message.move.moves
                             .filterIsInstance<ClaimMove>()
-                            .forEach { gameState?.update(it.claim) }
+                            .forEach { claimRiver(it.claim) }
             }
 
             intellect!!.chooseMove().move(protocol)
         }
+    }
+
+    private fun claimRiver(claim: Claim) {
+        gameState?.update(claim)
     }
 }

@@ -5,6 +5,7 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.Socket
 
+
 class ServerConnection(url: String, port: Int) {
 
     // Для связи с сервером для начала нужно создать сокет
@@ -31,15 +32,18 @@ class ServerConnection(url: String, port: Int) {
     // Она требует, чтобы функция была inline и позволяет получить для T объект класса
     // (см. последнюю строку функции)
     inline fun <reified T> receiveJson(): T {
+        println("Receiving json from thread ${Thread.currentThread().id}")
         val lengthChars = mutableListOf<Char>()
         var ch = '0'
-        while (ch != ':') {
+        println("reading stream")
+        while (ch != ':' || ch.toInt() != 65535) {
             lengthChars += ch
+            println("memory leak with ${ch.toInt()}")
             ch = sin.read().toChar()
         }
 
+        println("joining")
         val length = lengthChars.joinToString("").trim().toInt()
-
         // Чтение из Reader нужно делать очень аккуратно
         val contentAsArray = CharArray(length)
         var start = 0
@@ -50,6 +54,7 @@ class ServerConnection(url: String, port: Int) {
             start += read
         }
 
+        //println("Json received")
         return objectMapper.readValue(String(contentAsArray), T::class.java)
     }
 

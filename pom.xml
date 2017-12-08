@@ -10,8 +10,11 @@
     <version>0.0.0.1</version>
 
     <properties>
-      <java.version>1.8</java.version>
-      <kotlin.version>1.1.60</kotlin.version>
+        <java.version>1.8</java.version>
+        <kotlin.version>1.2.0</kotlin.version>
+        <junit.jupiter.version>5.0.0</junit.jupiter.version>
+        <junit.vintage.version>4.12.0</junit.vintage.version>
+        <junit.platform.version>1.0.0</junit.platform.version>
     </properties>
 
     <dependencies>
@@ -28,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
+            <artifactId>kotlin-test-junit</artifactId>
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
@@ -54,6 +57,24 @@
             <version>2.33</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.vintage.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -75,65 +96,65 @@
         </pluginManagement>
 
         <plugins>
-          <plugin>
-              <groupId>org.jetbrains.kotlin</groupId>
-              <artifactId>kotlin-maven-plugin</artifactId>
-              <version>${kotlin.version}</version>
-              <configuration>
-                  <args>
-                      <arg>-jvm-target</arg>
-                      <arg>${java.version}</arg>
-                      <arg>-Xcoroutines=enable</arg>
-                  </args>
-                  <jvmTarget>1.8</jvmTarget>
-              </configuration>
-              <executions>
-                  <execution>
-                      <id>compile</id>
-                      <phase>compile</phase>
-                      <goals>
-                          <goal>compile</goal>
-                      </goals>
-                  </execution>
-                  <execution>
-                      <id>test-compile</id>
-                      <phase>test-compile</phase>
-                      <goals>
-                          <goal>test-compile</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <configuration>
+                    <args>
+                        <arg>-jvm-target</arg>
+                        <arg>${java.version}</arg>
+                        <arg>-Xcoroutines=enable</arg>
+                    </args>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.7.0</version>
-              <executions>
-                  <execution>
-                      <id>default-compile</id>
-                      <phase>none</phase>
-                  </execution>
-                  <execution>
-                      <id>default-testCompile</id>
-                      <phase>none</phase>
-                  </execution>
-                  <execution>
-                      <id>java-compile</id>
-                      <phase>compile</phase>
-                      <goals>
-                          <goal>compile</goal>
-                      </goals>
-                  </execution>
-                  <execution>
-                      <id>java-test-compile</id>
-                      <phase>test-compile</phase>
-                      <goals>
-                          <goal>testCompile</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>java-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>java-test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
     </build>

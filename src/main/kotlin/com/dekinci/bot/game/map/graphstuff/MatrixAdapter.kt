@@ -7,6 +7,7 @@ class MatrixAdapter (val size: Int) {
 
     operator fun set(x: Int, y: Int, t: Int) {
         matrix.set(x, y, t)
+        matrix.set(y, x, t)
     }
 
     fun forEachHorizontal(row: Int, operation: (Int, column: Int) -> Unit) {

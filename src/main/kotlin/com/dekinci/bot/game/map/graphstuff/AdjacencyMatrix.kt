@@ -2,9 +2,10 @@ package com.dekinci.bot.game.map.graphstuff
 
 import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.RiverStateID
+import java.util.HashSet
 
 class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
-    val matrix: MatrixAdapter = MatrixAdapter(size)
+    private val matrix: MatrixAdapter = MatrixAdapter(size)
 
     init {
         for (river in rivers) {
@@ -15,17 +16,17 @@ class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
         println("adj matrix created and filled with rivers...")
     }
 
-    fun getConnections(site: Int): ArrayList<Int> {
-        val list = ArrayList<Int>()
+    fun getConnections(site: Int): Collection<Int> {
+        val connections = HashSet<Int>()
 
         for (i in 0 until matrix.size) {
             if (matrix[site, i] != RiverStateID.DEFUNCT)
-                list.add(i)
+                connections.add(i)
             if (matrix[i, site] != RiverStateID.DEFUNCT)
-                list.add(i)
+                connections.add(i)
         }
 
-        return list
+        return connections
     }
 
     fun hasFreeConnections(site: Int): Boolean {
@@ -38,4 +39,10 @@ class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
 
         return false
     }
+
+    operator fun set(from: Int, to: Int, state: Int) {
+        matrix[from, to] = state
+    }
+
+    operator fun get(from: Int, to: Int): Int = matrix[from, to]
 }
