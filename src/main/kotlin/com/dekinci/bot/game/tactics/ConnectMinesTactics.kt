@@ -1,15 +1,21 @@
-package com.dekinci.bot.game.strategy
+package com.dekinci.bot.game.tactics
 
 import com.dekinci.bot.game.GameState
 
-class ConnectMinesStrategy (
-        private val gameState: GameState,
+/**
+ * This tactics implements connecting two networks via the shortest of possible paths.
+ * It uses A* algorithm for best path finding and updates it state after each move
+ * (to check if enemy captured one of desired rivers)
+ * If no path exists, returns -1 in the nextMove
+ */
+class ConnectMinesTactics(
+        gameState: GameState,
         private val from: Int,
         private val to: Int
-) : Strategy, Iterator<Int> {
+) : Tactics, Iterator<Int> {
     private val aStar = AStar(gameState.gameMap)
-    var steps = aStar.findPath(to, from)
-    var prevStep = 0
+    private var steps = aStar.findPath(to, from)
+    private var prevStep = 0
 
     override fun isFinished(): Boolean = prevStep == steps?.size
 

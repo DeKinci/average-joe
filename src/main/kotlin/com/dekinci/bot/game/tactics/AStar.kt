@@ -1,4 +1,4 @@
-package com.dekinci.bot.game.strategy
+package com.dekinci.bot.game.tactics
 
 import com.dekinci.bot.game.map.GameMap
 
