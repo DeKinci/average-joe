@@ -38,7 +38,6 @@ class ServerConnection(url: String, port: Int) {
         println("reading stream")
         while (ch != ':' || ch.toInt() != 65535) {
             lengthChars += ch
-            println("memory leak with ${ch.toInt()}")
             ch = sin.read().toChar()
         }
 
