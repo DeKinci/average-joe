@@ -13,8 +13,6 @@ class GameState(private val setup: Setup) {
         var myId = -1
     }
 
-    val bestMines = TreeMap<Int, Int>()
-
     var mines = ArrayList<Int>(50)
 
     init {

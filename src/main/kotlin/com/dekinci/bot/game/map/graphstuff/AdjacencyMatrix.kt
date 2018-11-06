@@ -5,13 +5,13 @@ import com.dekinci.bot.entities.RiverStateID
 import java.util.HashSet
 
 class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
-    private val matrix: MatrixAdapter = MatrixAdapter(size)
+    private val matrix = Array(size) { IntArray(size) }
 
     init {
         for (river in rivers) {
             val row = river.source
             val cell = river.target
-            matrix[row, cell] = RiverStateID.NEUTRAL
+            matrix[row][cell] = RiverStateID.NEUTRAL
         }
         println("adj matrix created and filled with rivers...")
     }
@@ -20,9 +20,9 @@ class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
         val connections = HashSet<Int>()
 
         for (i in 0 until matrix.size) {
-            if (matrix[site, i] != RiverStateID.DEFUNCT)
+            if (matrix[site][i] != RiverStateID.DEFUNCT)
                 connections.add(i)
-            if (matrix[i, site] != RiverStateID.DEFUNCT)
+            if (matrix[i][site] != RiverStateID.DEFUNCT)
                 connections.add(i)
         }
 
@@ -31,9 +31,9 @@ class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
 
     fun hasFreeConnections(site: Int): Boolean {
         for (i in 0 until size) {
-            if (matrix[site, i] == RiverStateID.NEUTRAL)
+            if (matrix[site][i] == RiverStateID.NEUTRAL)
                 return true
-            if (matrix[i, site] == RiverStateID.NEUTRAL)
+            if (matrix[i][site] == RiverStateID.NEUTRAL)
                 return true
         }
 
@@ -41,8 +41,8 @@ class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
     }
 
     operator fun set(from: Int, to: Int, state: Int) {
-        matrix[from, to] = state
+        matrix[from][to] = state
     }
 
-    operator fun get(from: Int, to: Int): Int = matrix[from, to]
+    operator fun get(from: Int, to: Int): Int = matrix[from][to]
 }

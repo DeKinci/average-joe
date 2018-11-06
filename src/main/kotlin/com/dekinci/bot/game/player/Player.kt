@@ -33,9 +33,9 @@ class Player(
         connectedSites.add(mine)
     }
 
-    fun mineCost(mine: Int): Int = map.weightsRegistry.getForAllSites(mine, connectedSites)
+    fun mineCost(mine: Int): Int = map.realMetrics.getForAllSites(mine, connectedSites)
 
-    fun siteCost(site: Int): Int = if (site in connectedSites) map.weightsRegistry.getForAllMines(site, mines) else 0
+    fun siteCost(site: Int): Int = if (site in connectedSites) map.realMetrics.getForAllMines(site, mines) else 0
 
     fun recount() {
         score = mines.sumBy { mineCost(it) }

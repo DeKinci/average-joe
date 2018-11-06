@@ -3,18 +3,13 @@ package com.dekinci.bot.game.map.graphstuff
 import com.dekinci.bot.entities.River
 import java.util.ArrayList
 
-class AdjacencyList(vertexAmount: Int) {
-    val list: ArrayList<ArrayList<Int>> = ArrayList(vertexAmount)
+class AdjacencyList(vertexAmount: Int, rivers: List<River>) {
+    val list: Array<HashSet<Int>> = Array(vertexAmount) { HashSet<Int>() }
 
-    constructor(vertexAmount: Int, rivers: List<River>) : this(vertexAmount) {
+    init {
         rivers.forEach { river ->
             addEdge(river.source, river.target)
         }
-    }
-
-    init {
-        for (i in 0 until vertexAmount)
-            list.add(ArrayList<Int>())
     }
 
     fun addEdge(from: Int, to: Int) {

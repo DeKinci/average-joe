@@ -12,12 +12,15 @@ class GameMap(size: Int, rivers: List<River>, mines: List<Int>) {
     private val adjList = AdjacencyList(size, rivers)
     private val minesSet = mines.toHashSet()
 
-    val weightsRegistry = MetricsRegistry(size, adjList, mines)
-    val minesClusters = TreeSet<HashSet<Int>>(Comparator { first, second -> first.size.compareTo(second.size) })
+    val realMetrics = RealMetrics(size, adjList, mines)
+
+    init {
+        realMetrics.calculate()
+    }
 
     fun hasFreeConnections(site: Int): Boolean = adjMatrix.hasFreeConnections(site)
 
-    fun isSiteConnectedWithAny(first: Int, others: List<Int>) = !Collections.disjoint(adjList[first], others)
+    fun isSiteConnectedWithAny(first: Int, others: Collection<Int>) = !Collections.disjoint(adjList[first], others)
 
     fun isSiteConnectedWith(first: Int, second: Int) = adjList.list[first].contains(second)
 

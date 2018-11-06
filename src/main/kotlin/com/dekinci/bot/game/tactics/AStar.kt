@@ -5,7 +5,6 @@ import com.dekinci.bot.game.map.GameMap
 import java.util.*
 
 class AStar(private val map: GameMap) {
-    //TODO: write tests
     private class PriorityList : LinkedList<Int>() {
         override fun add(element: Int): Boolean {
             for (i in 0 until size)
@@ -36,7 +35,7 @@ class AStar(private val map: GameMap) {
         val openList = PriorityList()
         val closedList = LinkedList<Int>()
 
-        parentMap.put(start, -1)
+        parentMap[start] = -1
         openList.add(start)
 
         while (!openList.isEmpty()) {
@@ -49,9 +48,8 @@ class AStar(private val map: GameMap) {
                 val isOpen = openList.contains(neighbor)
                 val isClosed = closedList.contains(neighbor)
 
-                if (!isOpen && !isClosed ||
-                        map.weightsRegistry[start, node] < map.weightsRegistry[start, neighbor]) {
-                    parentMap.put(neighbor, node)
+                if (!isOpen && !isClosed || map.realMetrics[start, node] < map.realMetrics[start, neighbor]) {
+                    parentMap[neighbor] = node
 
                     if (isClosed)
                         closedList.remove(neighbor)

@@ -1,10 +1,8 @@
 package com.dekinci.bot
 
 import com.dekinci.connection.Connection
-import com.dekinci.testbot.TestBot
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
-import java.net.ConnectException
 
 object Arguments {
     @Option(name = "-u", usage = "Specify server url")

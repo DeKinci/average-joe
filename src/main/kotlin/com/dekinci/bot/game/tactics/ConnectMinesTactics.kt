@@ -40,11 +40,11 @@ class ConnectMinesTactics(
 
         return steps!![prevStep++]
     }
-}
 
-private fun <E> List<E>.commonUntil(other: List<E>): Int {
-    val limit = if (size > other.size) other.size else size
+    private fun <E> List<E>.commonUntil(other: List<E>): Int {
+        val limit = if (size > other.size) other.size else size
 
-    return (0 until limit).firstOrNull { this[it] != other[it] }
-            ?: limit
+        return (0 until limit).firstOrNull { this[it] != other[it] }
+                ?: limit
+    }
 }
