@@ -1,23 +1,21 @@
 package com.dekinci.bot.game.tactics
 
-class GreedyTactics : Tactics {
-    override fun isFinished(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+import com.dekinci.bot.game.GameState
+import com.dekinci.bot.moves.Move
 
-    override fun isSuccessful(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+class GreedyTactics(private val gameState: GameState) : Tactics {
+    private var isFinished = false
+    private var isSuccessful = false
 
-    override fun nextNMoves(n: Int): List<Int> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun isFinished() = isFinished
 
-    override fun next(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun isSuccessful() = isSuccessful
+
+    override fun next(): Move {
+        throw NoSuchElementException()
     }
 
     override fun hasNext(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return false
     }
 }

@@ -1,8 +1,8 @@
 package com.dekinci.bot
 
-import com.dekinci.connection.Connection
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
+import ru.spbstu.competition.protocol.ServerConnection
 
 object Arguments {
     @Option(name = "-u", usage = "Specify server url")
@@ -19,13 +19,15 @@ fun main(args: Array<String>) {
     Arguments.use(args)
 
     val name = "Budding Jack"
-    val connection = Connection(Arguments.url, Arguments.port)
+    val connection = ServerConnection(Arguments.url, Arguments.port)
 
     val jack = Bot(name, connection)
     Thread(jack).start()
 
-    while (!jack.isPlaying) {
-        Thread(Bot(name, connection)).start()
-        Thread.sleep(2000)
-    }
+//    var counter = 1
+//    while (!jack.isPlaying) {
+//        Thread.sleep(5000)
+//        Thread(Bot("$name #$counter", ServerConnection(Arguments.url, Arguments.port))).start()
+//        counter++
+//    }
 }

@@ -1,18 +1,16 @@
 package com.dekinci.bot
 
-import com.dekinci.bot.game.Intellect
 import com.dekinci.bot.game.GameState
-import com.dekinci.bot.game.player.PlayersManager
-import com.dekinci.connection.Connection
+import com.dekinci.bot.game.Intellect
 import ru.spbstu.competition.protocol.Protocol
+import ru.spbstu.competition.protocol.ServerConnection
 import ru.spbstu.competition.protocol.data.*
 
-open class Bot(private val name: String, connection: Connection) : Runnable {
+class Bot(private val name: String, connection: ServerConnection) : Runnable {
     private var intellect: Intellect? = null
     private var gameState: GameState? = null
-    private var manager: PlayersManager? = null
 
-    private val protocol = Protocol(connection.url, connection.port)
+    private val protocol = Protocol(connection)
 
     @Volatile
     var isPlaying = false
@@ -20,7 +18,7 @@ open class Bot(private val name: String, connection: Connection) : Runnable {
     override fun run() {
         initialize()
         playAGame()
-        println("$name died")
+        println("$name finished")
     }
 
     private fun initialize() {
@@ -28,19 +26,19 @@ open class Bot(private val name: String, connection: Connection) : Runnable {
 
         protocol.handShake("$name, sup!")
         val setupData = protocol.setup()
-        println("setup passed with " +
-                setupData.map.sites.size + " nodes, " +
-                setupData.map.rivers.size + " rivers and " +
-                setupData.map.mines.size + " mines")
+        println("""setup passed with
+            |${setupData.map.sites.size} nodes,
+            |${setupData.map.rivers.size} rivers and
+            |${setupData.map.mines.size} mines""".trimMargin())
+
+        isPlaying = true
 
         gameState = GameState(setupData)
-        manager = PlayersManager(gameState!!, setupData.punters)
         intellect = Intellect(gameState!!)
 
         println("Received id = ${setupData.punter}")
 
         protocol.ready()
-        isPlaying = true
     }
 
     private fun playAGame() {

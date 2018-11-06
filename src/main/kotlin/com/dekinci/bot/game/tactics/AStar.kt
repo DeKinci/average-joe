@@ -31,7 +31,7 @@ class AStar(private val map: GameMap) {
         return path
     }
 
-    fun findPath(start: Int, finish: Int): List<Int>? {
+    fun findPath(start: Int, finish: Int): List<Int> {
         val openList = PriorityList()
         val closedList = LinkedList<Int>()
 
@@ -61,6 +61,6 @@ class AStar(private val map: GameMap) {
             closedList.add(node)
         }
 
-        return null
+        return emptyList()
     }
 }

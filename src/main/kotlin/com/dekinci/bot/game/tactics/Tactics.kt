@@ -1,5 +1,7 @@
 package com.dekinci.bot.game.tactics
 
+import com.dekinci.bot.moves.Move
+
 /**
  * Tactics is a consequence of taking concrete points.
  * In different position bot may need different tactics
@@ -7,7 +9,7 @@ package com.dekinci.bot.game.tactics
  * so tactics mechanism implements a finite-state machine
  * for choosing concrete behavior.
  */
-interface Tactics : Iterator<Int> {
+interface Tactics : Iterator<Move> {
     /**
      * Returns true if tactics finished (WAS NOT INTERRUPTED).
      */
@@ -19,19 +21,11 @@ interface Tactics : Iterator<Int> {
     fun isSuccessful(): Boolean
 
     /**
-     * DOES NOT UPDATES STRATEGY!!!
-     * Has only one element: -1 if tactics is not successful.
-     * Has no elements if tactics is finished
-     * Otherwise returns n or all (if all is less) steps to success.
-     */
-    fun nextNMoves(n: Int): List<Int>
-
-    /**
      * Updates tactics.
      * Returns next step of tactics.
      * Usable as iterator.
      */
-    override fun next(): Int
+    override fun next(): Move
 
     /**
      * True if tactics has an idea to continue.

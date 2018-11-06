@@ -32,16 +32,13 @@ class ServerConnection(url: String, port: Int) {
     // Она требует, чтобы функция была inline и позволяет получить для T объект класса
     // (см. последнюю строку функции)
     inline fun <reified T> receiveJson(): T {
-        println("Receiving json from thread ${Thread.currentThread().id}")
         val lengthChars = mutableListOf<Char>()
         var ch = '0'
-        println("reading stream")
-        while (ch != ':' || ch.toInt() != 65535) {
+        while (ch != ':') {
             lengthChars += ch
             ch = sin.read().toChar()
         }
 
-        println("joining")
         val length = lengthChars.joinToString("").trim().toInt()
         // Чтение из Reader нужно делать очень аккуратно
         val contentAsArray = CharArray(length)
