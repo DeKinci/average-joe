@@ -2,10 +2,10 @@ package com.dekinci.bot.game.map
 
 import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.RiverStateID
+import com.dekinci.bot.game.GameState
 import com.dekinci.bot.game.map.graphstuff.AdjacencyList
 import com.dekinci.bot.game.map.graphstuff.AdjacencyMatrix
 import java.util.*
-import kotlin.collections.HashSet
 
 class GameMap(size: Int, rivers: List<River>, mines: List<Int>) {
     private val adjMatrix = AdjacencyMatrix(size, rivers)
@@ -28,6 +28,10 @@ class GameMap(size: Int, rivers: List<River>, mines: List<Int>) {
 
     fun getFreeConnections(site: Int): Collection<Int> {
         return getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL }
+    }
+
+    fun getAvailableConnections(site: Int): Collection<Int> {
+        return getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL || adjMatrix[site, it] == GameState.ID }
     }
 
     fun isSiteMine(site: Int): Boolean = minesSet.contains(site)

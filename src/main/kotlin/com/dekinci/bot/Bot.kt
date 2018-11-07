@@ -27,9 +27,9 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
         protocol.handShake("$name, sup!")
         val setupData = protocol.setup()
         println("""setup passed with
-            |${setupData.map.sites.size} nodes,
-            |${setupData.map.rivers.size} rivers and
-            |${setupData.map.mines.size} mines""".trimMargin())
+            ${setupData.map.sites.size} nodes,
+            ${setupData.map.rivers.size} rivers and
+            ${setupData.map.mines.size} mines""".trimMargin())
 
         isPlaying = true
 
@@ -43,7 +43,6 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
 
     private fun playAGame() {
         while (isPlaying) {
-            println("Getting new message")
             val message = protocol.serverMessage()
 
             when (message) {

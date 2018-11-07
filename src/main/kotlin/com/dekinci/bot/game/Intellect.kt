@@ -18,19 +18,19 @@ class Intellect(private val gameState: GameState) {
             changeTactics()
 
         val move = tactics.next()
-        println("Next move from ${tactics.javaClass.simpleName} is ${move.javaClass.simpleName}")
+        println("Next move from ${tactics.javaClass.simpleName} is ${move}")
 
-        return tactics.next()
+        return move
     }
 
     private fun changeTactics() {
         when {
             minePosition < gameState.mines.size - 1 -> {
-                tactics = ConnectMinesTactics(gameState, gameState.mines[minePosition], gameState.mines[minePosition + 1])
+                tactics = ConnectMinesTactics(gameState.gameMap, gameState.mines[minePosition], gameState.mines[minePosition + 1])
                 minePosition++
             }
             minePosition == gameState.mines.size - 1 -> {
-                tactics = ConnectMinesTactics(gameState, gameState.mines[minePosition], gameState.mines[0])
+                tactics = ConnectMinesTactics(gameState.gameMap, gameState.mines[minePosition], gameState.mines[0])
                 minePosition++
             }
             else -> tactics = PassTactics()

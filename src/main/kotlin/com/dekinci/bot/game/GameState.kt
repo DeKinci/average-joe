@@ -9,15 +9,11 @@ import java.util.*
 class GameState(private val setup: Setup) {
     val gameMap = GameMap(IDManager.maxID + 1, setup.map.rivers, setup.map.mines)
 
-    companion object {
-        var myId = -1
-    }
-
     var mines = ArrayList<Int>(50)
 
     init {
-        myId = setup.punter
         setupMines()
+        ID = setup.punter
     }
 
     private fun setupMines() = setup.map.mines.forEach { mine ->
@@ -30,5 +26,9 @@ class GameState(private val setup: Setup) {
 
     private fun claimRiver(claim: Claim) {
         gameMap.claim(claim.source, claim.target, claim.punter)
+    }
+
+    companion object {
+        var ID = 0
     }
 }

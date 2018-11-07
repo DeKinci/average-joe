@@ -12,6 +12,7 @@ class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
             val row = river.source
             val cell = river.target
             matrix[row][cell] = RiverStateID.NEUTRAL
+            matrix[cell][row] = RiverStateID.NEUTRAL
         }
         println("adj matrix created and filled with rivers...")
     }
@@ -42,6 +43,7 @@ class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
 
     operator fun set(from: Int, to: Int, state: Int) {
         matrix[from][to] = state
+        matrix[to][from] = state
     }
 
     operator fun get(from: Int, to: Int): Int = matrix[from][to]
