@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.ArrayList
 
-class DijkstraJTest {
+class DijkstraTest {
     private val INF = Integer.MAX_VALUE / 2
 
     @Test
