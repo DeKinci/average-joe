@@ -26,17 +26,21 @@ class RealMetrics(
         weights[mine] = IntArray(sitesAmount) { -1 }
 
         val dijkstra = Dijkstra(sitesAmount, totalList)
-        val metricsRelatedToMine = dijkstra.sparse(mine).map { w -> w * w }
+        val metricsRelatedToMine = dijkstra.sparse(mine)
 
         metricsRelatedToMine.forEachIndexed { site, weight ->
             if (weight != -1)
-                weights[mine]!![site] = weight
+                weights[mine]!![site] = weight * weight
         }
     }
 
-    fun getForAllMines(site: Int, mines: Collection<Int>): Int = mines.sumBy { weights[it]?.get(site) ?: 0 }
+    fun mineCost(mine: Int) = weights[mine]!!.sumBy { if (it >= 0) it else 0 }
 
-    fun getForAllSites(mine: Int, sites: Collection<Int>): Int = sites.sumBy { weights[mine]?.get(it) ?: 0 }
+    fun getAllMines(site: Int) = mines.filter { weights[it]!![site] > -1 }
 
-    operator fun get(mine: Int, site: Int) = weights[mine]?.get(site) ?: 0
+    fun getForAllMines(site: Int, mines: Collection<Int>): Int = mines.filter { weights[it]!![site] > -1 }.sumBy { weights[it]!![site] }
+
+    fun getForAllSites(mine: Int, sites: Collection<Int>): Int = sites.filter { weights[mine]!![it] > -1 }.sumBy { weights[mine]!![it] }
+
+    operator fun get(mine: Int, site: Int) = weights[mine]!![site]
 }

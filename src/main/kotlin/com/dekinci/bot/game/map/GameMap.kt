@@ -6,16 +6,52 @@ import com.dekinci.bot.game.GameState
 import com.dekinci.bot.game.map.graphstuff.AdjacencyList
 import com.dekinci.bot.game.map.graphstuff.AdjacencyMatrix
 import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 class GameMap(size: Int, rivers: List<River>, mines: List<Int>) {
+    data class Island(val cost: Int, val sites: Set<Int>, val mines: Set<Int>)
+
     private val adjMatrix = AdjacencyMatrix(size, rivers)
     private val adjList = AdjacencyList(size, rivers)
     private val minesSet = mines.toHashSet()
+
+    val sites: Set<Int>
+    val islands: Set<Island>
+
+    val ourSites = HashSet<Int>()
 
     val realMetrics = RealMetrics(size, adjList, mines)
 
     init {
         realMetrics.calculate()
+
+        val siteSet = HashSet<Int>()
+        rivers.forEach {
+            siteSet.add(it.source)
+            siteSet.add(it.target)
+        }
+        sites = siteSet
+
+        islands = initIslands()
+    }
+
+    private fun initIslands(): Set<Island> {
+        data class Island(var cost: Int, val sites: HashSet<Int>)
+        val islandMap = HashMap<List<Int>, Island>()
+
+        for (site in sites) {
+            val determiner = realMetrics.getAllMines(site)
+
+            if (determiner !in islandMap)
+                islandMap[determiner] = Island(0, HashSet())
+
+            val isl = islandMap[determiner]!!
+            isl.cost += realMetrics.getForAllMines(site, minesSet)
+            isl.sites.add(site)
+        }
+
+        return islandMap.values.map { GameMap.Island(it.cost, it.sites, it.sites.intersect(minesSet)) }.toSet()
     }
 
     fun hasFreeConnections(site: Int): Boolean = adjMatrix.hasFreeConnections(site)
@@ -38,5 +74,10 @@ class GameMap(size: Int, rivers: List<River>, mines: List<Int>) {
 
     fun claim(from: Int, to: Int, id: Int) {
         adjMatrix[from, to] = id
+
+        if (id == GameState.ID) {
+            ourSites.add(from)
+            ourSites.add(to)
+        }
     }
 }

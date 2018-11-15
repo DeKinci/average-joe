@@ -24,6 +24,10 @@ class Dijkstra(private val vertexAmount: Int, private val adjacencyList: Adjacen
                 }
         }
 
+        for (i in 0 until dist.size)
+            if (dist[i] == INF)
+                dist[i] = -1
+
         return dist
     }
 }

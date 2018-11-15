@@ -4,7 +4,7 @@ import com.dekinci.bot.game.map.graphstuff.Dijkstra
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.ArrayList
+import java.util.*
 
 class DijkstraJTest {
     private val INF = Integer.MAX_VALUE / 2
@@ -30,4 +30,34 @@ class DijkstraJTest {
         val dijkstra = Dijkstra(vertexAmount, AdjacencyList(vertexAmount, riverList))
         return dijkstra.sparse(start)
     }
+
+    @Test
+    fun testDiv() {
+
+        println(Arrays.toString(dijkstraDivided(5)))
+    }
+
+    /**
+     *  0---1---2
+     *  | \ | /
+     *  3   4   5
+     *  | / |   |
+     *  6---7   8
+     */
+    private fun dijkstraDivided(start: Int): IntArray {
+        val vertexAmount = 9
+
+        val riverList = ArrayList<River>()
+
+        val data = "0 1 1 2 0 3 0 4 1 4 2 4 3 6 4 7 5 8 6 7"
+                .split(" ")
+                .map { Integer.parseInt(it) }
+
+        for (i in 0 until data.size step 2)
+            riverList.add(River(data[i], data[i + 1]))
+
+        val dijkstra = Dijkstra(vertexAmount, AdjacencyList(vertexAmount, riverList))
+        return dijkstra.sparse(start)
+    }
+
 }
