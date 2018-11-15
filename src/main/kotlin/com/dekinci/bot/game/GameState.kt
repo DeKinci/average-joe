@@ -1,5 +1,6 @@
 package com.dekinci.bot.game
 
+import com.dekinci.bot.game.map.FancyRivers
 import com.dekinci.bot.game.map.GameMap
 import com.dekinci.bot.utility.IDManager
 import ru.spbstu.competition.protocol.data.Claim
@@ -8,6 +9,8 @@ import java.util.*
 
 class GameState(private val setup: Setup) {
     val gameMap = GameMap(IDManager.maxID + 1, setup.map.rivers, setup.map.mines)
+
+    val fancySites = FancyRivers(gameMap)
 
     var mines = ArrayList<Int>(50)
 
@@ -26,6 +29,7 @@ class GameState(private val setup: Setup) {
 
     private fun claimRiver(claim: Claim) {
         gameMap.claim(claim.source, claim.target, claim.punter)
+        fancySites.claim(claim.source, claim.target)
     }
 
     companion object {

@@ -8,7 +8,7 @@ import java.util.concurrent.Executors
 class RealMetrics(
         private val sitesAmount: Int,
         private val totalList: AdjacencyList,
-        private val mines: List<Int>
+        private val mines: Collection<Int>
 ) {
     private val weights = ConcurrentHashMap<Int, IntArray>(mines.size)
 

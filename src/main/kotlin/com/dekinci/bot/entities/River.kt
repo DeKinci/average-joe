@@ -5,6 +5,8 @@ import ru.spbstu.competition.protocol.data.Claim
 data class River(var source: Int, var target: Int, val state: Int = RiverStateID.NEUTRAL) {
     constructor(claim: Claim, state: Int): this(claim.source, claim.target, state)
 
+    fun has(site: Int) = source == site || target == site
+
     override fun equals(other: Any?) = other is River &&
                     (source == other.source && target == other.target ||
                             source == other.target && target == other.source)
