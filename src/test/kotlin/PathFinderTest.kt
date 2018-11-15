@@ -16,16 +16,17 @@ class PathFinderTest {
     @Test
     fun test() {
         val size = 9
-        val minesList = listOf(3, 5)
+        val minesList = listOf(3, 2)
         val riverList = "0,1 1,2 0,3 0,4 1,4 4,2 2,5 3,6 6,4 7,4 4,8 8,5 6,7 7,8"
                 .split(" ")
                 .map { River(it.split(",")[0].toInt(), it.split(",")[1].toInt()) }
 
-//        println(riverList)
         val map = GameMap(size, riverList, minesList)
+
         println(map.islands.size)
+
         val start = 3
-        val path = listOf(start) + PathFinder(map).findPath(start, 5, listOf(listOf(1, 0, 4, 7)))
+        val path = listOf(start) + PathFinder(map).findPath(start, 2, listOf(listOf(3, 0, 1, 2), listOf(7, 8), listOf(2, 5)))
         println(path)
     }
 
@@ -39,30 +40,43 @@ class PathFinderTest {
     @Test
     fun test3() {
         val size = 9
-        val minesList = listOf(3, 8, 5)
-        val riverList = "0,1 1,2 0,3 0,4 1,4 2,4 3,6 4,7 5,8 6,7"
+        val minesList = listOf(3, 2, 5)
+        val riverList = "0,1 1,2 0,3 0,4 1,4 2,4 3,6 4,7 4,6 5,8 6,7"
                 .split(" ")
                 .map { River(it.split(",")[0].toInt(), it.split(",")[1].toInt()) }
 
-//        println(riverList)
         val map = GameMap(size, riverList, minesList)
 
         val start = 3
-//        val path = PathFinder(map).findPath(start, 8)
-//        println(path)
-        println(map.islands.size)
+        val path = PathFinder(map).findPath(start, 2, listOf(listOf(3, 0, 1, 2)))
+        println(path)
+
+        val listPaths = ArrayList<List<Int>>()
+
+        while (true) {
+            val path = PathFinder(map).findPath(start, 2, listPaths)
+            if (!path.isEmpty())
+                listPaths.add(listOf(start) + path)
+            else
+                break
+        }
+
+        println("k is " + listPaths.size)
+        println()
+
+        println(map.islands.size.toString() + ":")
 
         for (isl in map.islands) {
-            println(isl.cost)
-            println(isl.mines)
+            println("cost " + isl.cost)
+            println("mines" + isl.mines)
             println()
         }
     }
 
     @Test
     fun test2() {
-        for (k in 0.. 1000) {
-            val size = 100
+        for (k in 0..0) {
+            val size = 1000
             val mines = hashSetOf<Int>()
 
             val r = Random()
@@ -70,7 +84,7 @@ class PathFinderTest {
                 mines.add(r.nextInt(size))
 
             val rivers = hashSetOf<River>()
-            for (i in 0..1 * size) {
+            for (i in 0..4 * size) {
                 val first = r.nextInt(size)
                 var second = r.nextInt(size)
                 while (first == second)

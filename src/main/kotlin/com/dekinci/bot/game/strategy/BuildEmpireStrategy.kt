@@ -8,6 +8,7 @@ import com.dekinci.bot.game.tactics.PathFinder
 import com.dekinci.bot.game.tactics.Tactics
 import com.dekinci.bot.moves.Move
 import com.dekinci.bot.moves.PassMove
+import kotlin.math.min
 
 class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
     private var tactics: Tactics = PassTactics()
@@ -32,7 +33,15 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
 
     override fun hasNext(): Boolean {
         if (tactics is PassTactics)
-            return chooseTactics()
+            return false
+
+        var counter = 3
+        while (!tactics.hasNext() && counter > 0) {
+            if(!chooseTactics())
+                return false
+            counter--
+        }
+
         return tactics.hasNext()
     }
 
@@ -107,8 +116,10 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
     private fun estimateK(from: Int, to: Int): Int {
         val pf = PathFinder(gameState.gameMap)
 
+        val threshold = min(gameState.gameMap.getAvailableConnections(from).size, gameState.gameMap.getAvailableConnections(to).size)
+
         val listPaths = ArrayList<List<Int>>()
-        while (listPaths.size < 7) {
+        while (listPaths.size <= threshold) {
             val path = pf.findPath(from, to, listPaths)
             if (!path.isEmpty())
                 listPaths.add(listOf(from) + path)

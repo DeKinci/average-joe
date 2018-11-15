@@ -42,6 +42,8 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
     }
 
     private fun playAGame() {
+        var passCounter = 0
+
         while (isPlaying) {
             val message = protocol.serverMessage()
 
@@ -61,7 +63,17 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
                             .forEach { claimRiver(it.claim) }
             }
 
-            intellect!!.chooseMove().move(protocol)
+            val move = intellect!!.chooseMove()
+
+            if (move is com.dekinci.bot.moves.PassMove)
+                passCounter++
+            else
+                passCounter = 0
+
+            if (passCounter > 15)
+                System.exit(100)
+
+            move.move(protocol)
         }
     }
 
