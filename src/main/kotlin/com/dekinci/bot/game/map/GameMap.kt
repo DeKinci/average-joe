@@ -9,14 +9,15 @@ import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
-class GameMap(size: Int, rivers: List<River>, val mines: Collection<Int>) {
+class GameMap(size: Int, rivers: List<River>, minesCollection: Collection<Int>) {
     data class Island(val cost: Int, val sites: Set<Int>, val mines: Set<Int>)
 
     private val adjMatrix = AdjacencyMatrix(size, rivers)
     private val adjList = AdjacencyList(size, rivers)
-    private val minesSet = mines.toHashSet()
 
     val sites: Set<Int>
+    val mines = minesCollection.toHashSet()
+
     val islands: Set<Island>
 
     val ourSites = HashSet<Int>()
@@ -47,11 +48,11 @@ class GameMap(size: Int, rivers: List<River>, val mines: Collection<Int>) {
                 islandMap[determiner] = Island(0, HashSet())
 
             val isl = islandMap[determiner]!!
-            isl.cost += realMetrics.getForAllMines(site, minesSet)
+            isl.cost += realMetrics.getForAllMines(site, mines)
             isl.sites.add(site)
         }
 
-        return islandMap.values.map { GameMap.Island(it.cost, it.sites, it.sites.intersect(minesSet)) }.toSet()
+        return islandMap.values.map { GameMap.Island(it.cost, it.sites, it.sites.intersect(mines)) }.toSet()
     }
 
     fun hasFreeConnections(site: Int): Boolean = adjMatrix.hasFreeConnections(site)
@@ -70,7 +71,7 @@ class GameMap(size: Int, rivers: List<River>, val mines: Collection<Int>) {
         return getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL || adjMatrix[site, it] == GameState.ID }
     }
 
-    fun isSiteMine(site: Int): Boolean = minesSet.contains(site)
+    fun isSiteMine(site: Int): Boolean = mines.contains(site)
 
     fun claim(from: Int, to: Int, id: Int) {
         adjMatrix[from, to] = id

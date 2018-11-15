@@ -1,43 +1,39 @@
 package com.dekinci.bot.game.player
 
 import com.dekinci.bot.game.map.GameMap
-import java.util.ArrayList
 
 
 class Player(
         private val map: GameMap,
-        val sites: HashSet<Int> = HashSet(),
-        val mines: HashSet<Int> = HashSet()) {
+        val sites: MutableSet<Int> = HashSet(),
+        val mines: MutableSet<Int> = HashSet()) {
     var score = 0
 
-    private val connectedSites = ArrayList<Int>()
-
-    fun claimSite(site: Int) {
-        if (sites.contains(site))
-            return
-
-        if (map.isSiteMine(site))
-            claimMine(site)
-
-        if (map.isSiteConnectedWithAny(site, connectedSites))
-            connectedSites.add(site)
-
-        sites.add(site)
+    private fun claim(site: Int): Int {
+        if (site in map.mines)
+            return claimMine(site)
+        return claimSite(site)
     }
 
-    private fun claimMine(mine: Int) {
-        if (mines.contains(mine))
-            return
-
-        mines.add(mine)
-        connectedSites.add(mine)
+    private fun claimMine(mine: Int): Int {
+        if (mine !in mines) {
+            mines.add(mine)
+            return recount()
+        }
+        return 0
     }
 
-    fun mineCost(mine: Int): Int = map.realMetrics.getForAllSites(mine, connectedSites)
+    fun claimSite(site: Int): Int {
+        if (site !in sites) {
+            sites.add(site)
+            return recount()
+        }
+        return 0
+    }
 
-    fun siteCost(site: Int): Int = if (site in connectedSites) map.realMetrics.getForAllMines(site, mines) else 0
-
-    fun recount() {
-        score = mines.sumBy { mineCost(it) }
+    private fun recount(): Int {
+        val oldScore = score
+        score = mines.sumBy { map.realMetrics.getForAllSites(it, sites.union(mines)) }
+        return score - oldScore
     }
 }
