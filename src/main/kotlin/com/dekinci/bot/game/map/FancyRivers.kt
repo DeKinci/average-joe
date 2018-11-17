@@ -22,5 +22,5 @@ class FancyRivers(private val gameMap: GameMap) {
             rivers.addAll(connections.map { River(site, it) })
     }
 
-    fun getSites(): Set<River> = rivers
+    fun getRivers(): Set<River> = rivers
 }

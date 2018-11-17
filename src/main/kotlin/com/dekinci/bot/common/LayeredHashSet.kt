@@ -1,6 +1,16 @@
 package com.dekinci.bot.common
 
 class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>() {
+    private data class ImmaterialKeyToPair<T, K>(val key: K, val pair: Pair<HashSet<T>, HashSet<T>>) {
+        override fun equals(other: Any?): Boolean {
+            return other is ImmaterialKeyToPair<*, *> && other.pair == pair
+        }
+
+        override fun hashCode(): Int {
+            return pair.hashCode()
+        }
+    }
+
     private val base = HashSet(initial)
 
     private val positiveLayers = HashMap<K?, HashSet<T>>()
@@ -8,8 +18,16 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
     private var defaultKey: K? = null
 
     init {
-        positiveLayers[null] = hashSetOf()
-        negativeLayers[null] = hashSetOf()
+        positiveLayers[null] = HashCachingHashSet()
+        negativeLayers[null] = HashCachingHashSet()
+    }
+
+    fun clearLayers() {
+        positiveLayers.clear()
+        negativeLayers.clear()
+
+        positiveLayers[null] = HashCachingHashSet()
+        negativeLayers[null] = HashCachingHashSet()
     }
 
     fun setDefault(key: K? = null) {
@@ -17,9 +35,11 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
     }
 
     fun addLayer(key: K, additions: Set<T> = emptySet(), deletions: Set<T> = emptySet()) {
-        positiveLayers[key] = HashSet(additions)
-        negativeLayers[key] = HashSet(deletions)
+        positiveLayers[key] = HashCachingHashSet(additions)
+        negativeLayers[key] = HashCachingHashSet(deletions)
     }
+
+    fun get(key: K?): MutableSet<T> = PartialSet(key)
 
     fun removeLayer(key: K) {
         positiveLayers.remove(key)
@@ -40,6 +60,10 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
         negativeLayers.remove(key)
     }
 
+    fun extendLayer(parent: K?, key: K) {
+        addLayer(key, positiveLayers[parent]!!, negativeLayers[parent]!!)
+    }
+
     fun rotateToLayer(key: K?) {
         negativeLayers.filter { it.key != key }.forEach { it.value.addAll(positiveLayers[key]!!) }
         positiveLayers.filter { it.key != key }.forEach { it.value.addAll(negativeLayers[key]!!) }
@@ -50,17 +74,24 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
             negativeLayers[first] == negativeLayers[second]
 
     fun distinct(): Set<K> {
-        val distinctMap = positiveLayers
-                .map { it.key to Pair(it.value, negativeLayers[it.key]!!) }
-                .distinctBy { it.second }.toMap()
+        val set = HashSet<ImmaterialKeyToPair<T, K?>>()
+        for (key in positiveLayers.keys)
+            set.add(ImmaterialKeyToPair(key, positiveLayers[key]!! to negativeLayers[key]!!))
+
+        set.add(ImmaterialKeyToPair(null, positiveLayers[null]!! to negativeLayers[null]!!))
 
         positiveLayers.clear()
         negativeLayers.clear()
 
-        positiveLayers.putAll(distinctMap.map { it.key to it.value.first })
-        negativeLayers.putAll(distinctMap.map { it.key to it.value.second })
+        val keys = HashSet<K>()
 
-        return distinctMap.keys.filter { it != null }.map { it!! }.toSet()
+        for (ktp in set) {
+            ktp.key?.let { keys.add(it) }
+            positiveLayers[ktp.key] = ktp.pair.first
+            negativeLayers[ktp.key] = ktp.pair.second
+        }
+
+        return keys
     }
 
     override val size: Int
@@ -107,9 +138,14 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
 
     fun baseContains(element: T) = base.contains(element)
 
+    override fun clear() {
+        clearLayer(defaultKey)
+    }
+
     fun clearLayer(key: K?) {
         positiveLayers[key]!!.clear()
         negativeLayers[key]!!.clear()
+        negativeLayers[key]!!.addAll(base)
     }
 
     fun clearBase(key: K?) {
@@ -129,11 +165,23 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
 
     fun baseIterator() = base.toSet().iterator()
 
-    override fun equals(other: Any?): Boolean {
-        return super<AbstractMutableSet>.equals(other)
-    }
+    fun keysIterator() = positiveLayers.keys.filter { it != null }.iterator()
 
-    override fun hashCode(): Int {
-        return super<AbstractMutableSet>.hashCode()
+    private inner class PartialSet(private val key: K?) : AbstractMutableSet<T>() {
+
+        override val size: Int
+            get() = size(key)
+
+        override fun add(element: T) = add(element, key)
+
+        override fun iterator() = iterator(key)
+
+        override fun clear() {
+            clearLayer(key)
+        }
+
+        override fun contains(element: T) = contains(element, key)
+
+        override fun remove(element: T) = remove(element, key)
     }
 }

@@ -14,9 +14,12 @@ class GameState(private val setup: Setup) {
 
     var mines = ArrayList<Int>(50)
 
+    val playersAmount: Int
+
     init {
         setupMines()
         ID = setup.punter
+        playersAmount = setup.punters
     }
 
     private fun setupMines() = setup.map.mines.forEach { mine ->

@@ -39,6 +39,7 @@ class GameMap(size: Int, rivers: List<River>, minesCollection: Collection<Int>) 
 
     private fun initIslands(): Set<Island> {
         data class Island(var cost: Int, val sites: HashSet<Int>)
+
         val islandMap = HashMap<List<Int>, Island>()
 
         for (site in sites) {
@@ -62,6 +63,14 @@ class GameMap(size: Int, rivers: List<River>, minesCollection: Collection<Int>) 
     fun isSiteConnectedWith(first: Int, second: Int) = adjList.list[first].contains(second)
 
     fun getConnections(site: Int) = adjList[site]
+
+    fun isSiteConnectedToTaken(site: Int): Boolean {
+        val connections = getConnections(site)
+        for (c in connections)
+            if (adjMatrix[site, c] != RiverStateID.NEUTRAL)
+                return true
+        return false
+    }
 
     fun getFreeConnections(site: Int): Collection<Int> {
         return getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL }

@@ -11,6 +11,6 @@ class PlayersManager(private val gameState: GameState, playersAmount: Int) {
     }
 
     fun claimSite(site: Int, punter: Int) {
-        players[punter].claimSite(site)
+//        players[punter].claimSite(site) TODO
     }
 }
