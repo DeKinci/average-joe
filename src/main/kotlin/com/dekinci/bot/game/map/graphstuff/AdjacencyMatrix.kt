@@ -2,7 +2,7 @@ package com.dekinci.bot.game.map.graphstuff
 
 import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.RiverStateID
-import java.util.HashSet
+import java.util.*
 
 class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
     private val matrix = Array(size) { IntArray(size) }

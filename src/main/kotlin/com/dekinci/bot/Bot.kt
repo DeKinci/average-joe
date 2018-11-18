@@ -1,6 +1,6 @@
 package com.dekinci.bot
 
-import com.dekinci.bot.entities.River
+import com.dekinci.bot.entities.StatedRiver
 import com.dekinci.bot.game.GameState
 import com.dekinci.bot.game.Intellect
 import ru.spbstu.competition.protocol.Protocol
@@ -80,6 +80,6 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
 
     private fun claimRiver(claim: Claim) {
         gameState?.update(claim)
-        intellect?.update(River(claim.source, claim.target, claim.punter))
+        intellect?.update(StatedRiver(claim))
     }
 }

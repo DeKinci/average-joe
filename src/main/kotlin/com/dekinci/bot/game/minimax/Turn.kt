@@ -1,9 +1,9 @@
 package com.dekinci.bot.game.minimax
 
-import com.dekinci.bot.entities.River
+import com.dekinci.bot.entities.StatedRiver
 
 class Turn private constructor(
-        val deltaRiver: River?,
+        val deltaRiver: StatedRiver?,
         val score: Int,
         val id: Int,
         val parent: Turn? = null
@@ -16,7 +16,7 @@ class Turn private constructor(
         hashCode = allRivers().hashCode()
     }
 
-    fun next(newRiver: River, score: Int, id: Int): Turn {
+    fun next(newRiver: StatedRiver, score: Int, id: Int): Turn {
         val next = Turn(newRiver, score, id, this)
         siblings.add(next)
         return next
@@ -27,12 +27,12 @@ class Turn private constructor(
         brothers?.let { brothers[brothers.indexOf(this)] = turn }
     }
 
-    fun skeleton(newRiver: River) = Turn(newRiver, -1, -1, this)
+    fun skeleton(newRiver: StatedRiver) = Turn(newRiver, -1, -1, this)
 
     fun siblings(): List<Turn> = siblings
 
-    fun allRivers(): Set<River> {
-        val set = HashSet<River>()
+    fun allRivers(): Set<StatedRiver> {
+        val set = HashSet<StatedRiver>()
         deltaRiver?.let { set.add(it) }
 
         var parentTurn = parent
@@ -44,8 +44,8 @@ class Turn private constructor(
         return set
     }
 
-    fun allRiversOf(player: Int): Set<River> {
-        val set = HashSet<River>()
+    fun allRiversOf(player: Int): Set<StatedRiver> {
+        val set = HashSet<StatedRiver>()
         deltaRiver?.let { set.add(it) }
 
         var parentTurn = parent
@@ -58,11 +58,11 @@ class Turn private constructor(
         return set
     }
 
-    fun firstRiverFor(player: Int, root: Turn): River? {
+    fun firstRiverFor(player: Int, root: Turn): StatedRiver? {
         if (this == root)
             return null
 
-        var result : River? = deltaRiver
+        var result : StatedRiver? = deltaRiver
 
         var parentTurn = parent
         while (parentTurn != null && parentTurn != root) {
