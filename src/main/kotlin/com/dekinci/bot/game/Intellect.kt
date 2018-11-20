@@ -10,7 +10,7 @@ class Intellect(private val gameState: GameState) {
     private val max = Minimax(gameState.playersAmount, gameState.gameMap)
 
     fun chooseMove(): Move {
-        val river = max.findBest(2, GameState.ID)
+        val river = max.findBest(1, GameState.ID)
         if (river != null) {
             gameState.gameMap.claim(river.source, river.target, GameState.ID)
             max.update(river.stated(GameState.ID))
