@@ -33,7 +33,7 @@ internal class RiverTest {
         assertEquals(r2, r1)
 
         assertEquals(r1, sr)
-        assertNotEquals(sr, r1)
+        assertEquals(sr, r1)
     }
 
     @Test

@@ -40,6 +40,27 @@ internal class LayeredHashSetTest {
 
     @Test
     fun rotateToLayer() {
+        set.baseAdd(1)
+        set.baseAdd(2)
+        set.baseAdd(5)
+
+        set.addLayer(0)
+        val first = set.get(0)
+        set.addLayer(1)
+        val second = set.get(1)
+
+        first.add(3)
+        first.remove(1)
+
+        second.add(4)
+        second.add(3)
+        second.remove(5)
+
+        set.rotateToLayer(0)
+
+        assertEquals(setOf(2, 3, 5), first)
+        assertEquals(setOf(1, 2, 3, 4), second)
+        assertEquals(setOf(2, 3, 5), set.baseGet())
     }
 
     @Test

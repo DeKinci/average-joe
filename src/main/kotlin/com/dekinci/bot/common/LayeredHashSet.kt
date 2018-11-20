@@ -47,8 +47,8 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
     }
 
     fun mergeLayer(key: K?) {
-        base.addAll(positiveLayers[key]!!)
         base.removeAll(negativeLayers[key]!!)
+        base.addAll(positiveLayers[key]!!)
         positiveLayers[key]!!.clear()
         negativeLayers[key]!!.clear()
     }
@@ -65,8 +65,11 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
     }
 
     fun rotateToLayer(key: K?) {
-        negativeLayers.filter { it.key != key }.forEach { it.value.addAll(positiveLayers[key]!!) }
-        positiveLayers.filter { it.key != key }.forEach { it.value.addAll(negativeLayers[key]!!) }
+        val positives = positiveLayers[key]!!
+        val negatives = negativeLayers[key]!!
+
+        negativeLayers.forEach { it.value.addAll(positives.subtract(positiveLayers[it.key]!!)) }
+        positiveLayers.forEach { it.value.addAll(negatives.subtract(negativeLayers[it.key]!!)) }
         mergeLayer(key)
     }
 
@@ -116,6 +119,8 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
         return base.add(element)
     }
 
+    fun baseGet(): MutableSet<T> = base
+
     override fun remove(element: T) = remove(element, defaultKey)
 
     fun remove(element: T, key: K?): Boolean {
@@ -148,7 +153,7 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
         negativeLayers[key]!!.addAll(base)
     }
 
-    fun clearBase(key: K?) {
+    fun clearBase() {
         base.clear()
     }
 

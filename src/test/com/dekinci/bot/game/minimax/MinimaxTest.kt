@@ -1,5 +1,6 @@
 package com.dekinci.bot.game.minimax
 
+import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.StatedRiver
 import com.dekinci.bot.game.map.GameMap
 import org.junit.jupiter.api.Test
@@ -12,6 +13,14 @@ internal class MinimaxTest {
      *  3   4   5
      *  | / |   |
      *  6---7   8
+     */
+
+    /**
+     *  0-x-1-x-2
+     *  x x x x
+     *  3   4   5
+     *  | / x   x
+     *  6-x-7   8
      */
     private fun disconnectedMap(): GameMap {
         val size = 9
@@ -27,8 +36,8 @@ internal class MinimaxTest {
     fun test() {
         val map = disconnectedMap()
 
-        val pa = 4
-        val depth = 1
+        val pa = 1
+        val depth = 10
         val mms = Array(pa) {Minimax(pa, map) }
         var i = 0
         var next = mms[i].findBest(depth, i)
@@ -49,7 +58,7 @@ internal class MinimaxTest {
         val map = disconnectedMap()
 
         val mm = Minimax(2, map)
-        val rivers = hashSetOf<StatedRiver>()
+        val rivers = hashSetOf<River>()
 
         map.mines.forEach{ mm.siteChange(rivers, it) }
         println(rivers)

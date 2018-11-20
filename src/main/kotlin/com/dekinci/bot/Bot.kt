@@ -25,7 +25,7 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
     private fun initialize() {
         println("Hi, I am $name, the ultimate punter!")
 
-        protocol.handShake("$name, sup!")
+        protocol.handShake(name)
         val setupData = protocol.setup()
         println("""setup passed with
             ${setupData.map.sites.size} nodes,

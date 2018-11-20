@@ -18,16 +18,9 @@ object Arguments {
 fun main(args: Array<String>) {
     Arguments.use(args)
 
-    val name = "Budding Jack"
+    val name = "Vladimir Minimax"
     val connection = ServerConnection(Arguments.url, Arguments.port)
 
     val jack = Bot(name, connection)
     Thread(jack).start()
-
-//    var counter = 1
-//    while (!jack.isPlaying) {
-//        Thread.sleep(5000)
-//        Thread(Bot("$name #$counter", ServerConnection(Arguments.url, Arguments.port))).start()
-//        counter++
-//    }
 }

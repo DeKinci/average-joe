@@ -75,6 +75,26 @@ class Turn private constructor(
         return result
     }
 
+    fun prevTurnOf(player: Int): Turn {
+        var prevTurn: Turn = root()
+        var parentTurn: Turn? = this
+
+        while (parentTurn != null) {
+            if (parentTurn.deltaRiver?.state == player) {
+                prevTurn = parentTurn
+                break
+            }
+            else if (parentTurn.parent == null) {
+                prevTurn = parentTurn
+                break
+            }
+
+            parentTurn = parentTurn.parent
+        }
+
+        return prevTurn
+    }
+
     override fun equals(other: Any?): Boolean {
         return other is Turn && allRivers() == other.allRivers()
     }
