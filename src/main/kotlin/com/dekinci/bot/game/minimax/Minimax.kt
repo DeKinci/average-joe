@@ -10,13 +10,12 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
     private val layeredFancyRivers = LayeredHashSet<River, Int>()
     private val layeredConnections = HashMap<Int, LayeredHashSet<Int, Int>>()
 
-    private val viewedTurns = HashSet<Turn>()
+    private val adultTurns = HashSet<Turn>()
     private val matchedTurns = HashMap<Int, ArrayList<Turn>>()
 
     private var rootTurn = Turn.root()
     private var bestNextTurn: Turn = rootTurn
     private var id = 0
-
 
     init {
         initConnections()
@@ -41,28 +40,35 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
     }
 
     fun findBest(depth: Int, targetPlayer: Int): StatedRiver? {
+        Stat.start("best")
         var moved = false
         for (i in 0 until depth)
             if (nextLvl(i, targetPlayer))
                 moved = true
 
-        return if (moved) bestNextTurn.firstRiverFor(targetPlayer, rootTurn) else null
+        val result = if (moved) bestNextTurn.firstRiverFor(targetPlayer, rootTurn) else null
+        Stat.end("best")
+        return result
     }
 
     fun update(river: StatedRiver) {
+        Stat.start("update")
         val skeleton = rootTurn.skeleton(river)
 
-        val next = if (viewedTurns.contains(skeleton)) {
+        val next = if (adultTurns.contains(skeleton)) {
+            Stat.start("skeleton restoration")
             val result = matchedTurns[skeleton.hashCode()]!!.find { it == skeleton }!!
-            layeredFancyRivers.rotateToLayer(result.id)
-            gameMap.mines.forEach { layeredConnections[it]!!.rotateToLayer(result.id) }
+//            layeredFancyRivers.rotateToLayer(result.id)
+//            gameMap.mines.forEach { layeredConnections[it]!!.rotateToLayer(result.id) }
+            Stat.end("skeleton restoration")
             result
         } else {
-            nextTurn(rootTurn, river, river.state)
+            nextTurn(rootTurn, river.stateless(), river.state)
         }
 
         rootTurn = next
         bestNextTurn = Turn.root()
+        Stat.end("update")
     }
 
     private fun nextLvl(lvl: Int, targetPlayer: Int): Boolean {
@@ -75,18 +81,18 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
     }
 
     private fun turn(playerN: Int, lvl: Int, targetPlayer: Int): Boolean {
+        Stat.start("turn")
         val turnSet = generateTurnSlice(lvl)
 
         for (turn in turnSet) {
-            if (turn !in viewedTurns) {
-                layeredFancyRivers.get(turn.id).removeAll(turn.allRivers().map { it.stateless() })
+            if (turn !in adultTurns) {
                 for (river in layeredFancyRivers.get(turn.id)) {
                     val next = nextTurn(turn, river, playerN)
                     if (playerN == targetPlayer && next.score > bestNextTurn.score)
                         bestNextTurn = next
                 }
 
-                viewedTurns.add(turn)
+                adultTurns.add(turn)
                 matchedTurns.merge(turn.hashCode(), arrayListOf(turn)) { old, new -> old.also { it.addAll(new) } }
             } else {
                 val matched = matchedTurns[turn.hashCode()]!!.find { it == turn }!!
@@ -94,10 +100,12 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
             }
         }
 
+        Stat.end("turn")
         return turnSet.isNotEmpty()
     }
 
     private fun generateTurnSlice(lvl: Int): Set<Turn> {
+        Stat.start("slice")
         var turnSet = HashSet<Turn>()
         turnSet.add(rootTurn)
         for (i in 0 until lvl) {
@@ -105,15 +113,21 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
             for (turn in turnSet)
                 newSet.addAll(turn.siblings())
 
-            println("Slice for $lvl-$i lvl is ${turnSet.size}")
-            turnSet.sortedBy { it.score }.takeLast(20)
-            turnSet = newSet
+//            println("Slice for $lvl-$i lvl is ${turnSet.size}")
+            turnSet = newSet.sortedBy { it.score }.takeLast(20).toHashSet()
         }
-
+//        println("Final slice: ${turnSet.size}")
+        Stat.end("slice")
         return turnSet
     }
 
     private fun nextTurn(parent: Turn, river: River, playerN: Int): Turn {
+        val skeleton = parent.skeleton(river.stated(playerN))
+        if (parent.siblings().contains(skeleton))
+            return parent.siblings().find { it == skeleton }!!
+
+        Stat.start("nextTurn")
+
         id++
         val idForConnections = parent.prevTurnOf(playerN).id
         val cons = HashMap<Int, Set<Int>>()
@@ -134,13 +148,14 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
         layeredFancyRivers.extendLayer(parent.id, id)
         val fancyRivers = layeredFancyRivers.get(id)
         riverChange(fancyRivers, river)
+        Stat.end("nextTurn")
         return next
     }
 
     internal fun riverChange(fancyRivers: MutableSet<River>, river: River) {
-        fancyRivers.remove(river)
         siteChange(fancyRivers, river.source)
         siteChange(fancyRivers, river.target)
+        fancyRivers.remove(river)
     }
 
     fun siteChange(fancyRivers: MutableSet<River>, site: Int) {
@@ -149,7 +164,7 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
         if (connections.isEmpty())
             fancyRivers.removeAll { it.has(site) }
         else
-            fancyRivers.addAll(connections.map { StatedRiver(site, it) })
+            fancyRivers.addAll(connections.map { River(site, it) })
     }
 
     private fun calculate(connected: Map<Int, Set<Int>>): Int {

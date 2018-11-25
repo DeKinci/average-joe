@@ -16,18 +16,18 @@ internal class MinimaxTest {
      */
 
     /**
-     *  0-x-1-x-2
-     *  x x x x
+     *  0---1---2
+     *  | \ | /
      *  3   4   5
-     *  | / x   x
-     *  6-x-7   8
+     *  | / |   |
+     *  6---7   8
      */
     private fun disconnectedMap(): GameMap {
         val size = 9
         val minesList = listOf(3, 2, 5)
         val riverList = "0,1 1,2 0,3 0,4 1,4 2,4 3,6 4,7 4,6 5,8 6,7"
                 .split(" ")
-                .map { StatedRiver(it.split(",")[0].toInt(), it.split(",")[1].toInt()) }
+                .map { River(it.split(",")[0].toInt(), it.split(",")[1].toInt()) }
 
         return GameMap(size, riverList, minesList)
     }
@@ -36,8 +36,8 @@ internal class MinimaxTest {
     fun test() {
         val map = disconnectedMap()
 
-        val pa = 1
-        val depth = 10
+        val pa = 2
+        val depth = 1
         val mms = Array(pa) {Minimax(pa, map) }
         var i = 0
         var next = mms[i].findBest(depth, i)
@@ -51,6 +51,8 @@ internal class MinimaxTest {
             i %= pa
             next = mms[i].findBest(depth, i)
         }
+
+        println(Stat)
     }
 
     @Test

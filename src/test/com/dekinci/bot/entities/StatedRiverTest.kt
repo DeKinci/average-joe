@@ -1,10 +1,28 @@
 package com.dekinci.bot.entities
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
+import java.lang.IllegalStateException
 
 internal class StatedRiverTest {
+
+    @Test
+    fun has() {
+        val r = StatedRiver(5, 10)
+        Assertions.assertTrue(r.has(5))
+        Assertions.assertTrue(r.has(10))
+        Assertions.assertFalse(r.has(7))
+    }
+
+    @Test
+    fun another() {
+        val r = StatedRiver(5, 10)
+        assertEquals(10, r.another(5))
+        assertEquals(5, r.another(10))
+        Assertions.assertThrows(IllegalStateException::class.java) { r.another(7) }
+    }
 
     @Test
     fun equalsTest() {

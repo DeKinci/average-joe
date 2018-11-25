@@ -125,7 +125,9 @@ class LayeredHashSet<T, K>(initial: Set<T> = emptySet()) : AbstractMutableSet<T>
 
     fun remove(element: T, key: K?): Boolean {
         if (!positiveLayers[key]!!.remove(element))
-            return if (base.contains(element)) negativeLayers[key]!!.add(element) else false
+            return if (base.contains(element))
+                negativeLayers[key]!!.add(element)
+            else false
 
         return true
     }

@@ -8,12 +8,14 @@ class Turn private constructor(
         val id: Int,
         val parent: Turn? = null
 ) {
-    private val siblings = ArrayList<Turn>()
+    private val siblings = HashSet<Turn>()
 
-    private val hashCode: Int
+    private val longHash: Long
 
     init {
-        hashCode = allRivers().hashCode()
+        var result = 0L
+        riverSet().forEach { result += 31 * it.hashCode() }
+        longHash = result
     }
 
     fun next(newRiver: StatedRiver, score: Int, id: Int): Turn {
@@ -23,15 +25,17 @@ class Turn private constructor(
     }
 
     fun replaceBy(turn: Turn) {
-        val brothers = parent?.siblings
-        brothers?.let { brothers[brothers.indexOf(this)] = turn }
+        parent?.siblings?.remove(this)
+        parent?.siblings?.add(turn)
     }
 
     fun skeleton(newRiver: StatedRiver) = Turn(newRiver, -1, -1, this)
 
-    fun siblings(): List<Turn> = siblings
+    fun siblings(): Set<Turn> = siblings
 
-    fun allRivers(): Set<StatedRiver> {
+    fun riverSet(): Set<StatedRiver> {
+        Stat.start("river set calculation")
+
         val set = HashSet<StatedRiver>()
         deltaRiver?.let { set.add(it) }
 
@@ -41,20 +45,7 @@ class Turn private constructor(
             parentTurn = parentTurn.parent
         }
 
-        return set
-    }
-
-    fun allRiversOf(player: Int): Set<StatedRiver> {
-        val set = HashSet<StatedRiver>()
-        deltaRiver?.let { set.add(it) }
-
-        var parentTurn = parent
-        while (parentTurn != null) {
-            if (parentTurn.deltaRiver?.state == player)
-                set.add(parentTurn.deltaRiver!!)
-            parentTurn = parentTurn.parent
-        }
-
+        Stat.end("river set calculation")
         return set
     }
 
@@ -96,11 +87,14 @@ class Turn private constructor(
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is Turn && allRivers() == other.allRivers()
+        if (other === this)
+            return true
+
+        return other is Turn && longHash == other.longHash && riverSet() == other.riverSet()
     }
 
     override fun hashCode(): Int {
-        return hashCode
+        return longHash.hashCode()
     }
 
     override fun toString(): String {

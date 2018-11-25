@@ -1,5 +1,6 @@
 package com.dekinci.bot.game
 
+import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.Site
 import com.dekinci.bot.entities.StatedRiver
 import org.junit.jupiter.api.Test
@@ -16,7 +17,7 @@ internal class IntellectTest {
         val siteList = riverString.split(Regex("[ ,]")).map { it.toInt() }.toSet().toList().map { Site(it) }
 
         val riverList = riverString.split(" ")
-                .map { StatedRiver(it.split(",")[0].toInt(), it.split(",")[1].toInt()) }
+                .map { River(it.split(",")[0].toInt(), it.split(",")[1].toInt()) }
 
         return GameState(Setup(1, 1, Map(siteList, riverList, minesList), null))
     }

@@ -1,5 +1,6 @@
 package com.dekinci.bot
 
+import com.dekinci.bot.game.minimax.Stat
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
 import ru.spbstu.competition.protocol.ServerConnection
@@ -23,4 +24,6 @@ fun main(args: Array<String>) {
 
     val jack = Bot(name, connection)
     Thread(jack).start()
+
+    Runtime.getRuntime().addShutdownHook(Thread { println(Stat.toString()) })
 }
