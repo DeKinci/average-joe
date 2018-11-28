@@ -1,7 +1,6 @@
 package com.dekinci.bot.game.minimax
 
 import com.dekinci.bot.entities.River
-import com.dekinci.bot.entities.StatedRiver
 import com.dekinci.bot.game.map.GameMap
 import org.junit.jupiter.api.Test
 
@@ -37,10 +36,11 @@ internal class MinimaxTest {
         val map = disconnectedMap()
 
         val pa = 2
-        val depth = 1
+        val depth = 40
         val mms = Array(pa) {Minimax(pa, map) }
         var i = 0
-        var next = mms[i].findBest(depth, i)
+        mms[i].runCycle(depth, i)
+        var next = mms[i].getBest(i)
         while (next != null) {
             println("$i: Taking ${next.source} ${next.target}")
 
@@ -49,7 +49,8 @@ internal class MinimaxTest {
 
             i++
             i %= pa
-            next = mms[i].findBest(depth, i)
+            mms[i].runCycle(depth, i)
+            next = mms[i].getBest(i)
         }
 
         println(Stat)

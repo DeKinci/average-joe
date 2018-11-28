@@ -5,23 +5,47 @@ import com.dekinci.bot.game.minimax.Minimax
 import com.dekinci.bot.moves.ClaimMove
 import com.dekinci.bot.moves.Move
 import com.dekinci.bot.moves.PassMove
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 
 class Intellect(private val gameState: GameState) {
-    private val max = Minimax(gameState.playersAmount, gameState.gameMap)
+    private val maxRef = AtomicReference<Minimax>(Minimax(gameState.playersAmount, gameState.gameMap))
+    private val maxRunner = Executors.newSingleThreadExecutor { runnable ->
+        Executors.defaultThreadFactory().newThread(runnable).also { it.isDaemon = true }
+    }
 
     fun chooseMove(): Move {
-        val river = max.findBest(3, GameState.ID)
-        if (river != null) {
-            gameState.gameMap.claim(river.source, river.target, GameState.ID)
-            max.update(river.stated(GameState.ID))
-        }
-        val move = river?.let { ClaimMove(river.source, river.target) } ?: PassMove()
+        val move = chooseBest()
 
-        println("StatedRiver is: $river")
+        println("Move is: $move")
         return move
     }
 
+    private fun chooseBest(): Move {
+        val task = maxRunner.submit {
+            maxRef.get().runCycle(100, GameState.ID)
+        }
+
+        try {
+            task.get(700, TimeUnit.MILLISECONDS)
+        } catch (e: TimeoutException) {
+            maxRef.get().interrupt()
+            task.get(100, TimeUnit.MILLISECONDS)
+        }
+
+        val river = maxRef.get().getBest(GameState.ID)
+        if (river != null) {
+            gameState.gameMap.claim(river.source, river.target, GameState.ID)
+            maxRef.get().update(river.stated(GameState.ID))
+        }
+        return river?.let { ClaimMove(river.source, river.target) } ?: PassMove()
+    }
+
     fun update(river: StatedRiver) {
-        max.update(river)
+        maxRunner.submit {
+            maxRef.get().update(river)
+        }.get()
     }
 }

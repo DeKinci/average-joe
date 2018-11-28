@@ -3,18 +3,26 @@ package ru.spbstu.competition.protocol
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
+import java.lang.IllegalStateException
 import java.net.Socket
+import java.net.SocketException
+import java.util.concurrent.locks.ReentrantLock
 
 
-class ServerConnection(url: String, port: Int) {
+class ServerConnection(private val url: String, private val port: Int) {
 
     // Для связи с сервером для начала нужно создать сокет
-    private val socket = Socket(url, port)
+    private var socket = Socket(url, port)
+//    private val streamLock = ReentrantLock()
 
     // Потом из сокета можно получить потоки ввода и вывода, и работать с ним, как с файлом
     // В нашей задаче можно сделать BufferedReader/PrintWriter, потому что протокол текстовый
-    val sin = BufferedReader(InputStreamReader(socket.getInputStream()))
-    val sout = PrintWriter(socket.getOutputStream(), true)
+    var sin = BufferedReader(InputStreamReader(socket.getInputStream()))
+    var sout = PrintWriter(socket.getOutputStream(), true)
+
+    init {
+        socket.soTimeout = 0
+    }
 
     // Отправка сообщения на сервер
     fun <T> sendJson(json: T) {
@@ -36,7 +44,7 @@ class ServerConnection(url: String, port: Int) {
         var ch = '0'
         while (ch != ':') {
             lengthChars += ch
-            ch = sin.read().toChar()
+            ch = readSafely().toChar()
         }
 
         val length = lengthChars.joinToString("").trim().toInt()
@@ -46,12 +54,51 @@ class ServerConnection(url: String, port: Int) {
         // Операция read не гарантирует нам, что вернулось именно нужное количество символов
         // Поэтому её нужно делать в цикле
         while (start < length) {
-            val read = sin.read(contentAsArray, start, length - start)
+            val read = readSafely(contentAsArray, start, length - start)
             start += read
         }
 
         //println("Json received")
         return objectMapper.readValue(String(contentAsArray), T::class.java)
+    }
+
+    fun readSafely(attempts: Int = 5): Int {
+        if (attempts == 0)
+            throw IllegalStateException("attempts out")
+
+        return try {
+            sin.read()
+        } catch (e: SocketException) {
+            handleSocketException(e)
+            readSafely(attempts - 1)
+        }
+    }
+
+    fun readSafely(cbuf: CharArray, off: Int, len: Int, attempts: Int = 5): Int {
+        if (attempts == 0)
+            throw IllegalStateException("attempts out")
+
+        return try {
+            sin.read(cbuf, off, len)
+        } catch (e: SocketException) {
+            handleSocketException(e)
+            readSafely(cbuf, off, len, attempts - 1)
+        }
+    }
+
+    private fun handleSocketException(e: SocketException) {
+//        streamLock.lock()
+        try {
+            e.printStackTrace()
+            sin.close()
+            sout.close()
+            socket.close()
+            socket = Socket(url, port)
+            sin = BufferedReader(InputStreamReader(socket.getInputStream()))
+            sout = PrintWriter(socket.getOutputStream(), true)
+        } finally {
+//            streamLock.unlock()
+        }
     }
 
 }

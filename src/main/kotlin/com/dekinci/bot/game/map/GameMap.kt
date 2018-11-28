@@ -9,7 +9,12 @@ import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
-class GameMap(size: Int, rivers: List<River>, minesCollection: Collection<Int>, sitesCollection: Collection<Int> = emptySet()) {
+class GameMap(
+        size: Int,
+        val rivers: List<River>,
+        minesCollection: Collection<Int>,
+        sitesCollection: Collection<Int> = emptySet()
+) {
     data class Island(val cost: Int, val sites: Set<Int>, val mines: Set<Int>)
 
     private val adjMatrix = AdjacencyMatrix(size, rivers)

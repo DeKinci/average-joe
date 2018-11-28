@@ -1,16 +1,20 @@
 package com.dekinci.bot.game.minimax
 
 import com.dekinci.bot.entities.StatedRiver
+import java.lang.ref.SoftReference
+import java.lang.ref.WeakReference
 
 class Turn private constructor(
         val deltaRiver: StatedRiver?,
         val score: Int,
-        val id: Int,
-        val parent: Turn? = null
+        val id: String,
+        parentInit: Turn? = null
 ) {
     private val siblings = HashSet<Turn>()
-
     private val longHash: Long
+    private val parent = WeakReference<Turn>(parentInit)
+
+    private var riverSet: SoftReference<Set<StatedRiver>>? = null
 
     init {
         var result = 0L
@@ -18,33 +22,36 @@ class Turn private constructor(
         longHash = result
     }
 
-    fun next(newRiver: StatedRiver, score: Int, id: Int): Turn {
+    fun next(newRiver: StatedRiver, score: Int, id: String): Turn {
         val next = Turn(newRiver, score, id, this)
         siblings.add(next)
         return next
     }
 
     fun replaceBy(turn: Turn) {
-        parent?.siblings?.remove(this)
-        parent?.siblings?.add(turn)
+        parent.get()?.siblings?.remove(this)
+        parent.get()?.siblings?.add(turn)
     }
 
-    fun skeleton(newRiver: StatedRiver) = Turn(newRiver, -1, -1, this)
+    fun skeleton(newRiver: StatedRiver) = Turn(newRiver, -1, "", this)
 
     fun siblings(): Set<Turn> = siblings
 
     fun riverSet(): Set<StatedRiver> {
+        if (riverSet?.get() != null)
+            return riverSet!!.get()!!
         Stat.start("river set calculation")
 
         val set = HashSet<StatedRiver>()
         deltaRiver?.let { set.add(it) }
 
-        var parentTurn = parent
+        var parentTurn = parent.get()
         while (parentTurn != null) {
             parentTurn.deltaRiver?.let { set.add(it) }
-            parentTurn = parentTurn.parent
+            parentTurn = parentTurn.parent.get()
         }
 
+        riverSet = SoftReference(set)
         Stat.end("river set calculation")
         return set
     }
@@ -55,12 +62,12 @@ class Turn private constructor(
 
         var result : StatedRiver? = deltaRiver
 
-        var parentTurn = parent
-        while (parentTurn != null && parentTurn != root) {
-            if (parentTurn.deltaRiver?.state == player)
-                result = parentTurn.deltaRiver
+        var currentTurn: Turn? = this
+        while (currentTurn != null && currentTurn != root) {
+            if (currentTurn.deltaRiver?.state == player)
+                result = currentTurn.deltaRiver
 
-            parentTurn = parentTurn.parent
+            currentTurn = currentTurn.parent.get()
         }
 
         return result
@@ -75,12 +82,12 @@ class Turn private constructor(
                 prevTurn = parentTurn
                 break
             }
-            else if (parentTurn.parent == null) {
+            else if (parentTurn.parent.get() == null) {
                 prevTurn = parentTurn
                 break
             }
 
-            parentTurn = parentTurn.parent
+            parentTurn = parentTurn.parent.get()
         }
 
         return prevTurn
@@ -98,10 +105,10 @@ class Turn private constructor(
     }
 
     override fun toString(): String {
-        return "${parent?.toString() ?: ""}; $deltaRiver"
+        return "${parent.get()?.toString() ?: ""}; $deltaRiver"
     }
 
     companion object {
-        fun root() = Turn(null, -1, 0, null)
+        fun root() = Turn(null, 0, "0", null)
     }
 }

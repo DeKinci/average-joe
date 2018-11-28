@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import java.lang.ref.PhantomReference
 import java.lang.ref.Reference
 import java.lang.ref.ReferenceQueue
+import java.util.*
 
 
 internal class QuantumTreeTest {
@@ -57,16 +58,18 @@ internal class QuantumTreeTest {
     @Test
     fun quantumTest() {
         val qt = QuantumTree(1.toString())
-        var n21: QuantumTree<String>.Node? = qt.root.next(2.toString())
-        val first = n21!!.next(4.toString())
-        n21.next(5.toString())
-        n21 = null
+        val n21: QuantumTree<String>.Node = qt.root.next(2.toString())
+        n21.next(4.toString())
+        val first = n21.next(5.toString())
 
-        var n22: QuantumTree<String>.Node? = qt.root.next(3.toString())
-        val second = n22!!.next(4.toString())
-        n22.next(5.toString())
-        n22 = null
+        val n22: QuantumTree<String>.Node = qt.root.next(3.toString())
+        val second = n22.next(5.toString())
+        n22.next(6.toString())
 
         assertTrue(first === second)
     }
+}
+
+fun main(args: Array<String>) {
+
 }

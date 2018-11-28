@@ -1,13 +1,10 @@
 package com.dekinci.bot.common
 
-import java.util.*
-import kotlin.collections.HashSet
-
 class QuantumTree<T>(rootElement: T) {
-    private val nodes = Collections.newSetFromMap(WeakHashMap<Node, Boolean>())
+    private val nodes = newWeakHashSet<Node>()
 
     inner class Node(val data: T, parent: Node? = null) {
-        private val parents = Collections.newSetFromMap(WeakHashMap<Node, Boolean>())
+        private val parents = newWeakHashSet<Node>()
         private val children = HashSet<Node>()
 
         init {
@@ -15,20 +12,38 @@ class QuantumTree<T>(rootElement: T) {
         }
 
         fun next(data: T): Node {
-            val next = Node(data, this)
+            var next = Node(data, this)
 
-//            val found = nodes.find { it == this }
-//            if (found != null)
-//                next = found
-//            else
-//                nodes.add(next)
+            val found = nodes.find { it == next }
+            if (found != null) {
+                next = found
+                next.parents.add(this)
+            }
+            else
+                nodes.add(next)
 
             children.add(next)
             return next
         }
 
+        fun anyLastMatchingOrRoot(predicate: (T) -> Boolean): Node {
+            var parents = newWeakHashSet<Node>(parents)
+
+            while (parents.isNotEmpty()) {
+                val nextParents = newWeakHashSet<Node>()
+                for (parent in parents) {
+                    if (predicate.invoke(parent.data))
+                        return parent
+                    nextParents.addAll(parent.children)
+                }
+                parents = nextParents
+            }
+
+            return this
+        }
+
         override fun equals(other: Any?): Boolean {
-            return other === this || (other is QuantumTree<*>.Node && other.data == data && other.parents == parents)
+            return other === this || (other is QuantumTree<*>.Node && other.data == data )
         }
 
         override fun hashCode(): Int {

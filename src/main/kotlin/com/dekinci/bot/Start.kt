@@ -19,7 +19,7 @@ object Arguments {
 fun main(args: Array<String>) {
     Arguments.use(args)
 
-    val name = "Vladimir Minimax"
+    val name = "Vladimir Nedomax"
     val connection = ServerConnection(Arguments.url, Arguments.port)
 
     val jack = Bot(name, connection)
