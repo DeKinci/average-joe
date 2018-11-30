@@ -3,7 +3,6 @@ package ru.spbstu.competition.protocol
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
-import java.lang.IllegalStateException
 import java.net.Socket
 import java.net.SocketException
 import java.util.concurrent.locks.ReentrantLock
@@ -13,7 +12,7 @@ class ServerConnection(private val url: String, private val port: Int) {
 
     // Для связи с сервером для начала нужно создать сокет
     private var socket = Socket(url, port)
-//    private val streamLock = ReentrantLock()
+    private val streamLock = ReentrantLock()
 
     // Потом из сокета можно получить потоки ввода и вывода, и работать с ним, как с файлом
     // В нашей задаче можно сделать BufferedReader/PrintWriter, потому что протокол текстовый
@@ -44,7 +43,7 @@ class ServerConnection(private val url: String, private val port: Int) {
         var ch = '0'
         while (ch != ':') {
             lengthChars += ch
-            ch = readSafely().toChar()
+            ch = sin.read().toChar()
         }
 
         val length = lengthChars.joinToString("").trim().toInt()
@@ -54,7 +53,7 @@ class ServerConnection(private val url: String, private val port: Int) {
         // Операция read не гарантирует нам, что вернулось именно нужное количество символов
         // Поэтому её нужно делать в цикле
         while (start < length) {
-            val read = readSafely(contentAsArray, start, length - start)
+            val read = sin.read(contentAsArray, start, length - start)
             start += read
         }
 
@@ -87,7 +86,7 @@ class ServerConnection(private val url: String, private val port: Int) {
     }
 
     private fun handleSocketException(e: SocketException) {
-//        streamLock.lock()
+        streamLock.lock()
         try {
             e.printStackTrace()
             sin.close()
@@ -97,7 +96,7 @@ class ServerConnection(private val url: String, private val port: Int) {
             sin = BufferedReader(InputStreamReader(socket.getInputStream()))
             sout = PrintWriter(socket.getOutputStream(), true)
         } finally {
-//            streamLock.unlock()
+            streamLock.unlock()
         }
     }
 

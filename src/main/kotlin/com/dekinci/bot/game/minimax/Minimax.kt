@@ -46,8 +46,10 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
     fun runCycle(depth: Int, targetPlayer: Int) {
         Stat.start("best")
         interrupt.set(false)
+        var depthCounter = 0
 
         for (i in 0 until depth) {
+            depthCounter++
             if (interrupt.get())
                 break
             var moved = false
@@ -57,6 +59,7 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
                 break
         }
 
+        println("Depth: $depthCounter")
         Stat.end("best")
     }
 
@@ -90,20 +93,22 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
 
     private fun nextLvl(lvl: Int, targetPlayer: Int): Boolean {
         var moved = false
-        for (i in 0 until playersAmount) {
-            if (interrupt.get())
-                break
+//        for (i in 0 until playersAmount) {
+//            if (interrupt.get())
+//                break
             if (turn((targetPlayer) % playersAmount, lvl, targetPlayer))
                 moved = true
-        }
+//        }
 
         return moved
     }
 
     private fun turn(playerN: Int, lvl: Int, targetPlayer: Int): Boolean {
         Stat.start("turn")
-        val turnSet = generateTurnSlice(lvl)
+        val turnSet = findNextTurns(lvl)
 //        println("Size: ${turnSet.size}")
+        if (interrupt.get())
+            return false
 
         for (turn in turnSet) {
             if (interrupt.get())
@@ -133,24 +138,35 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
         return turnSet.isNotEmpty()
     }
 
-    private fun generateTurnSlice(lvl: Int): Set<Turn> {
+    private fun findNextTurns(depth: Int): Set<Turn> {
         Stat.start("slice")
-        var turnSet = HashSet<Turn>()
-        turnSet.add(rootTurn)
-        for (i in 0 until lvl) {
+        var turns: Set<Turn> = HashSet<Turn>().also { it.add(rootTurn) }
+
+        for (i in 0 until depth) {
             if (interrupt.get())
                 break
 
-            val newSet = HashSet<Turn>()
-            for (turn in turnSet)
-                newSet.addAll(turn.siblings())
-
+            val newSet = map(turns)
+//            println("Mapped size is ${turns.size}")
             if (interrupt.get())
                 break
-            turnSet = newSet.sortedBy { it.score }.takeLast(20).toHashSet()
+            turns = reduce(newSet)
+//            println("Reduced size is ${turns.size}")
         }
         Stat.end("slice")
-        return turnSet
+        return turns
+    }
+
+    private fun map(turns: Set<Turn>): Set<Turn> {
+        val newSet = HashSet<Turn>()
+        for (turn in turns)
+            newSet.addAll(turn.siblings())
+        return newSet
+    }
+
+    private fun reduce(turns: Set<Turn>): Set<Turn> {
+        val best = turns.maxBy { it.score }
+        return best?.let { _ -> turns.filter { best.score == it.score }.toHashSet() } ?: emptySet()
     }
 
     private fun nextTurn(parent: Turn, river: River, playerN: Int): Turn {

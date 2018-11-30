@@ -36,7 +36,7 @@ internal class MinimaxTest {
         val map = disconnectedMap()
 
         val pa = 2
-        val depth = 40
+        val depth = 3
         val mms = Array(pa) {Minimax(pa, map) }
         var i = 0
         mms[i].runCycle(depth, i)
