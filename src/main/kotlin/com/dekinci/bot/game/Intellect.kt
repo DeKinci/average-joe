@@ -25,14 +25,14 @@ class Intellect(private val gameState: GameState) {
 
     private fun chooseBest(): Move {
         val task = maxRunner.submit {
-            maxRef.get().runCycle(100, GameState.ID)
+            maxRef.get().runCycle(1000, GameState.ID)
         }
 
         try {
-            task.get(700, TimeUnit.MILLISECONDS)
+            task.get(300, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {
             maxRef.get().interrupt()
-            task.get(100, TimeUnit.MILLISECONDS)
+            task.get()
         }
 
         val river = maxRef.get().getBest(GameState.ID)

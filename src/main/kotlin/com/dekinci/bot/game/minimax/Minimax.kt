@@ -5,13 +5,15 @@ import com.dekinci.bot.common.newWeakHashSet
 import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.StatedRiver
 import com.dekinci.bot.game.map.GameMap
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+
 
 class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
 
     private val layeredFancyRivers = WeakLayeredHashSet<River, String>()
-    private val layeredConnections = HashMap<Int, WeakLayeredHashSet<Int, String>>()
+    private val layeredConnections = WeakHashMap<String, Connections>()
 
     private val adultTurns = newWeakHashSet<Turn>()
     private val matchedTurns = HashMap<Int, MutableSet<Turn>>()
@@ -28,13 +30,8 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
     }
 
     private fun initConnections() {
-        gameMap.mines.forEach {
-            val lhs = WeakLayeredHashSet<Int, String>()
-            lhs.baseAdd(it)
-            lhs.addLayer(rootTurn.id)
-            lhs.rotateToLayer(rootTurn.id)
-            layeredConnections[it] = lhs
-        }
+        val lhs = Connections(gameMap.mines)
+        layeredConnections[rootTurn.id] = lhs
     }
 
     private fun initFancyRivers() {
@@ -93,30 +90,34 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
 
     private fun nextLvl(lvl: Int, targetPlayer: Int): Boolean {
         var moved = false
-//        for (i in 0 until playersAmount) {
-//            if (interrupt.get())
-//                break
-            if (turn((targetPlayer) % playersAmount, lvl, targetPlayer))
-                moved = true
-//        }
+        for (i in 0 until playersAmount) {
+            if (interrupt.get())
+                break
+        if (turn((targetPlayer) % playersAmount, lvl, targetPlayer))
+            moved = true
+        }
 
         return moved
     }
 
     private fun turn(playerN: Int, lvl: Int, targetPlayer: Int): Boolean {
-        Stat.start("turn")
         val turnSet = findNextTurns(lvl)
-//        println("Size: ${turnSet.size}")
         if (interrupt.get())
             return false
 
+        Stat.start("turn")
+
         for (turn in turnSet) {
-            if (interrupt.get())
+            if (interrupt.get()) {
+                Stat.end("turn")
                 break
+            }
             if (turn !in adultTurns) {
                 for (river in layeredFancyRivers.get(turn.id)) {
-                    if (interrupt.get())
+                    if (interrupt.get()) {
+                        Stat.end("turn")
                         break
+                    }
                     val next = nextTurn(turn, river, playerN)
                     if (playerN == targetPlayer && next.score > bestNextTurn.get().score)
                         bestNextTurn.set(next)
@@ -142,17 +143,22 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
         Stat.start("slice")
         var turns: Set<Turn> = HashSet<Turn>().also { it.add(rootTurn) }
 
+        print("Building slice: ")
         for (i in 0 until depth) {
-            if (interrupt.get())
+            if (interrupt.get()) {
+                Stat.end("slice")
                 break
+            }
 
             val newSet = map(turns)
-//            println("Mapped size is ${turns.size}")
-            if (interrupt.get())
+            if (interrupt.get()) {
+                Stat.end("slice")
                 break
+            }
             turns = reduce(newSet)
-//            println("Reduced size is ${turns.size}")
+            print("${turns.size} ")
         }
+        println()
         Stat.end("slice")
         return turns
     }
@@ -179,20 +185,10 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
         idCounter++
         val nextId = idCounter.toString()
         val idForConnections = parent.prevTurnOf(playerN).id
-        val cons = HashMap<Int, Set<Int>>()
-        layeredConnections.forEach {
-            val connections = it.value
-            connections.extendLayer(idForConnections, nextId)
-            val set = connections.get(nextId)
-            if (set.contains(river.target))
-                set.add(river.source)
-            if (set.contains(river.source))
-                set.add(river.target)
-            cons[it.key] = set
-        }
+        val cons = layeredConnections[idForConnections]!!.addRiver(river)
+        layeredConnections[nextId] = cons
 
-        val cost = calculate(cons)
-        val next = parent.next(river.stated(playerN), cost, nextId)
+        val next = parent.next(river.stated(playerN), cons.cost(gameMap.realMetrics), nextId)
 
         val fancyRivers = layeredFancyRivers.extendLayer(parent.id, nextId)
         riverChange(fancyRivers, river)
@@ -213,9 +209,5 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap) {
             fancyRivers.removeAll { it.has(site) }
         else
             fancyRivers.addAll(connections.map { River(site, it) })
-    }
-
-    private fun calculate(connected: Map<Int, Set<Int>>): Int {
-        return connected.entries.sumBy { gameMap.realMetrics.getForAllSites(it.key, it.value) }
     }
 }

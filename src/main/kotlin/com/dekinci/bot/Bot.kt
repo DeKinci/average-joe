@@ -64,6 +64,9 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
                             .forEach { claimRiver(it.claim) }
             }
 
+            if (!isPlaying)
+                break
+
             val move = intellect!!.chooseMove()
 
             if (move is com.dekinci.bot.moves.PassMove)
@@ -71,8 +74,10 @@ class Bot(private val name: String, connection: ServerConnection) : Runnable {
             else
                 passCounter = 0
 
-            if (passCounter > 15)
-                System.exit(100)
+            if (passCounter > 15) {
+                System.err.println("Exiting because of passes")
+                break
+            }
 
             move.move(protocol)
         }

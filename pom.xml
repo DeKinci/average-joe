@@ -104,7 +104,6 @@
                     <args>
                         <arg>-jvm-target</arg>
                         <arg>${java.version}</arg>
-                        <arg>-Xcoroutines=enable</arg>
                     </args>
                     <jvmTarget>1.8</jvmTarget>
                 </configuration>

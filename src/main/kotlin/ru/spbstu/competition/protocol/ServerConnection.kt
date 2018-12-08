@@ -20,7 +20,7 @@ class ServerConnection(private val url: String, private val port: Int) {
     var sout = PrintWriter(socket.getOutputStream(), true)
 
     init {
-        socket.soTimeout = 0
+        socket.setSoLinger(true, 10)
     }
 
     // Отправка сообщения на сервер
