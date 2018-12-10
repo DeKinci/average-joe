@@ -5,16 +5,21 @@ import com.dekinci.bot.game.minimax.Minimax
 import com.dekinci.bot.moves.ClaimMove
 import com.dekinci.bot.moves.Move
 import com.dekinci.bot.moves.PassMove
+import ru.spbstu.competition.protocol.data.Claim
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicReference
 
 class Intellect(private val gameState: GameState) {
-    private val maxRef = AtomicReference<Minimax>(Minimax(gameState.playersAmount, gameState.gameMap))
+    private val maxRef = AtomicReference<Minimax>(Minimax(gameState.playersAmount, gameState.gameMap, 50))
+
     private val maxRunner = Executors.newSingleThreadExecutor { runnable ->
         Executors.defaultThreadFactory().newThread(runnable).also { it.isDaemon = true }
     }
+
+    private var task: Future<*>? = null
 
     fun chooseMove(): Move {
         val move = chooseBest()
@@ -24,28 +29,24 @@ class Intellect(private val gameState: GameState) {
     }
 
     private fun chooseBest(): Move {
-        val task = maxRunner.submit {
-            maxRef.get().runCycle(1000, GameState.ID)
-        }
-
-        try {
-            task.get(300, TimeUnit.MILLISECONDS)
-        } catch (e: TimeoutException) {
-            maxRef.get().interrupt()
-            task.get()
-        }
-
         val river = maxRef.get().getBest(GameState.ID)
-        if (river != null) {
-            gameState.gameMap.claim(river.source, river.target, GameState.ID)
-            maxRef.get().update(river.stated(GameState.ID))
+
+        if (river == null) {
+            System.err.println("PassMove returned!")
+            return PassMove()
         }
-        return river?.let { ClaimMove(river.source, river.target) } ?: PassMove()
+
+        gameState.update(Claim(GameState.ID, river.source, river.target))
+        update(river.stated(GameState.ID))
+
+        return ClaimMove(river.source, river.target)
     }
 
     fun update(river: StatedRiver) {
-        maxRunner.submit {
+        maxRef.get().interrupt()
+        task = maxRunner.submit {
             maxRef.get().update(river)
-        }.get()
+            maxRef.get().runCycle(GameState.ID)
+        }
     }
 }

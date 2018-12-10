@@ -18,7 +18,7 @@ class Turn private constructor(
 
     init {
         var result = 0L
-        riverSet().forEach { result += 31 * it.hashCode() }
+        riverSet().forEach { result = result * 31 + it.hashCode() }
         longHash = result
     }
 
@@ -33,7 +33,7 @@ class Turn private constructor(
         parent.get()?.siblings?.add(turn)
     }
 
-    fun skeleton(newRiver: StatedRiver) = Turn(newRiver, -1, "", this)
+    fun skeleton(newRiver: StatedRiver) = Turn(newRiver, 0, "", this)
 
     fun siblings(): Set<Turn> = siblings
 
@@ -56,16 +56,13 @@ class Turn private constructor(
         return set
     }
 
-    fun firstRiverFor(player: Int, root: Turn): StatedRiver? {
-        if (this == root)
-            return null
-
-        var result : StatedRiver? = deltaRiver
+    fun firstTurnFor(player: Int, root: Turn): Turn? {
+        var result : Turn? = null
 
         var currentTurn: Turn? = this
         while (currentTurn != null && currentTurn != root) {
             if (currentTurn.deltaRiver?.state == player)
-                result = currentTurn.deltaRiver
+                result = currentTurn
 
             currentTurn = currentTurn.parent.get()
         }

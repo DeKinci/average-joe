@@ -15,11 +15,11 @@ internal class MinimaxTest {
      */
 
     /**
-     *  0---1---2
-     *  | \ | /
+     *  0-o-1-o-2
+     *  x \ | /
      *  3   4   5
-     *  | / |   |
-     *  6---7   8
+     *  | / o   |
+     *  6-x-7   8
      */
     private fun disconnectedMap(): GameMap {
         val size = 9
@@ -31,15 +31,20 @@ internal class MinimaxTest {
         return GameMap(size, riverList, minesList)
     }
 
+    /**
+     *  0---1
+     */
+    private fun nanoMap() = GameMap(2, listOf(River(0, 1)), listOf(0))
+
     @Test
     fun test() {
         val map = disconnectedMap()
 
         val pa = 2
-        val depth = 3
-        val mms = Array(pa) {Minimax(pa, map) }
+        val depth = 1
+        val mms = Array(pa) {Minimax(pa, map, depth) }
         var i = 0
-        mms[i].runCycle(depth, i)
+        mms[i].runCycle(i)
         var next = mms[i].getBest(i)
         while (next != null) {
             println("$i: Taking ${next.source} ${next.target}")
@@ -49,7 +54,32 @@ internal class MinimaxTest {
 
             i++
             i %= pa
-            mms[i].runCycle(depth, i)
+            mms[i].runCycle(i)
+            next = mms[i].getBest(i)
+        }
+
+        println(Stat)
+    }
+
+    @Test
+    fun testSmall() {
+        val map = nanoMap()
+
+        val pa = 2
+        val depth = 40
+        val mms = Array(pa) {Minimax(pa, map, depth) }
+        var i = 0
+        mms[i].runCycle(i)
+        var next = mms[i].getBest(i)
+        while (next != null) {
+            println("$i: Taking ${next.source} ${next.target}")
+
+            map.claim(next.source, next.target, next.state)
+            mms.forEach { it.update(next!!.stated(i)) }
+
+            i++
+            i %= pa
+            mms[i].runCycle(i)
             next = mms[i].getBest(i)
         }
 
@@ -60,15 +90,16 @@ internal class MinimaxTest {
     fun siteChange() {
         val map = disconnectedMap()
 
-        val mm = Minimax(2, map)
+        val mm = Minimax(1, map, 0)
         val rivers = hashSetOf<River>()
 
         map.mines.forEach{ mm.siteChange(rivers, it) }
         println(rivers)
-        mm.siteChange(rivers, 0)
+        map.claim(0, 3, 1000)
+        mm.riverChange(rivers, River(0, 3))
         println(rivers)
-        mm.siteChange(rivers, 3)
+        map.claim(0, 4, 1000)
+        mm.riverChange(rivers, River(0, 4))
         println(rivers)
     }
-
 }
