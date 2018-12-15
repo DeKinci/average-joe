@@ -12,25 +12,28 @@ internal class MinimaxTest {
     fun test() {
         val map = disconnectedMap()
 
-        val pa = 2
-        val depth = 1
+        val pa = 1
+        val depth = 2
         val mms = Array(pa) {Minimax(pa, map, it, depth) }
         var i = 0
-        mms[i].startDoomMachine()
+        mms[i].mineSolution()
         var next = mms[i].getBest(i)
+        var c = 0
         while (next != null) {
             println("$i: Taking ${next.source} ${next.target}")
+            c++
 
             map.update(StatedRiver(next.source, next.target, next.state))
             mms.forEach { it.update(next!!.stated(i)) }
 
             i++
             i %= pa
-            mms[i].startDoomMachine()
+            mms[i].mineSolution()
             next = mms[i].getBest(i)
         }
 
         println(Stat)
+        println(c)
     }
 
     @Test
@@ -41,7 +44,7 @@ internal class MinimaxTest {
         val depth = 40
         val mms = Array(pa) {Minimax(pa, map, it, depth) }
         var i = 0
-        mms[i].startDoomMachine()
+        mms[i].mineSolution()
         var next = mms[i].getBest(i)
         while (next != null) {
             println("$i: Taking ${next.source} ${next.target}")
@@ -51,7 +54,7 @@ internal class MinimaxTest {
 
             i++
             i %= pa
-            mms[i].startDoomMachine()
+            mms[i].mineSolution()
             next = mms[i].getBest(i)
         }
 

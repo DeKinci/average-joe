@@ -39,7 +39,7 @@ class Intellect(private val gameState: GameState) {
     fun update(river: StatedRiver) {
         task = maxRunner.submit {
             maxRef.update(river)
-            maxRef.startDoomMachine()
+            maxRef.mineSolution()
         }
     }
 }

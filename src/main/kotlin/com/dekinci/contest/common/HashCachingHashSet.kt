@@ -5,12 +5,14 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class HashCachingHashSet<T> : HashSet<T> {
     constructor() : super()
-    constructor(c: Collection<T>?) : super(c)
+    constructor(c: Collection<T>) : super() {
+        addAll(c)
+    }
     constructor(initialCapacity: Int, loadFactor: Float) : super(initialCapacity, loadFactor)
     constructor(initialCapacity: Int) : super(initialCapacity)
 
-    private var hash = AtomicInteger(0)
-    private var isValid = AtomicBoolean(false)
+    private val hash = AtomicInteger(0)
+    private val isValid = AtomicBoolean(false)
 
     override fun hashCode(): Int {
         if (!isValid.get()) {
