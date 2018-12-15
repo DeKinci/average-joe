@@ -1,10 +1,10 @@
-package com.dekinci.bot.game.map.graphstuff
+package com.dekinci.bot.game.map.graph
 
 import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.RiverStateID
 import java.util.*
 
-class AdjacencyMatrix (private val size: Int, rivers: List<River>) {
+class AdjacencyMatrix (private val size: Int, rivers: Array<River>) {
     private val matrix = Array(size) { IntArray(size) }
 
     init {

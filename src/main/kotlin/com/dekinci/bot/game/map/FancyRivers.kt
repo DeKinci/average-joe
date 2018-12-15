@@ -6,7 +6,7 @@ class FancyRivers(private val gameMap: GameMap) {
     private val rivers = HashSet<River>()
 
     init {
-        gameMap.mines.forEach { siteChange(it) }
+        gameMap.basicMap.mines.forEach { siteChange(it) }
     }
 
     fun claim(from: Int, to: Int) {

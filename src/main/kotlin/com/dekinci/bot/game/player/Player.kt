@@ -10,7 +10,7 @@ class Player(
     var score = 0
 
     private fun claim(site: Int): Int {
-        if (site in map.mines)
+        if (site in map.basicMap.mines)
             mines.add(site)
 
         if (sites.add(site))

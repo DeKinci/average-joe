@@ -20,7 +20,7 @@ class PathFinder(private val map: GameMap) {
 
     private val parentMap = HashMap<Int, Int>()
 
-    fun findPath(start: Int, finish: Int, excludePaths: List<List<Int>> = emptyList()): List<Int> {
+    fun findPath(start: Int, finish: Int, punter: Int, excludePaths: List<List<Int>> = emptyList()): List<Int> {
         println("Finding path from $start to $finish")
 
         val openList = PriorityQueue<Int>()
@@ -41,7 +41,7 @@ class PathFinder(private val map: GameMap) {
             if (node == finish)
                 return constructPath(finish)
 
-            val neighbors = map.getAvailableConnections(node)
+            val neighbors = map.getAvailableConnections(node, punter)
 
             for (neighbor in neighbors) {
                 val isOpen = openList.contains(neighbor)

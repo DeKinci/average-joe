@@ -6,24 +6,30 @@ import com.dekinci.bot.entities.River
 import com.dekinci.bot.entities.StatedRiver
 import com.dekinci.bot.game.map.GameMap
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.HashSet
+import kotlin.concurrent.withLock
 
 
-class Minimax(private val playersAmount: Int, private val gameMap: GameMap, private val depth: Int) {
-
+class Minimax(
+        private val playersAmount: Int,
+        private val gameMap: GameMap,
+        private val targetPlayer: Int,
+        private val depth: Int
+) {
     private val layeredFancyRivers = WeakLayeredHashSet<River, String>()
     private val layeredConnections = WeakHashMap<String, Connections>()
 
     private val adultTurns = newWeakHashSet<Turn>()
     private val matchedTurns = HashMap<Int, MutableSet<Turn>>()
 
-    private var rootTurn = Turn.root()
-    private var bestNextTurn: AtomicReference<Turn> = AtomicReference(rootTurn)
-    private var idCounter = 0
+    private var rootTurn = AtomicReference<Turn>(Turn.root())
+    private var bestNextTurn: AtomicReference<Turn> = AtomicReference(rootTurn.get())
+    private var idCounter = AtomicInteger()
 
-    private val interrupt = AtomicBoolean(false)
+    private val updateLock = ReentrantLock()
 
     init {
         initConnections()
@@ -31,49 +37,52 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap, priv
     }
 
     private fun initConnections() {
-        val lhs = Connections(gameMap.mines)
-        layeredConnections[rootTurn.id] = lhs
+        val lhs = Connections(gameMap.basicMap.mines)
+        layeredConnections[rootTurn.get().id] = lhs
     }
 
     private fun initFancyRivers() {
-        val set = layeredFancyRivers.addLayer(rootTurn.id)
-        gameMap.mines.forEach { siteChange(set, it) }
-        layeredFancyRivers.rotateToLayer(rootTurn.id)
+        val set = layeredFancyRivers.addLayer(rootTurn.get().id)
+        gameMap.basicMap.mines.forEach { siteChange(set, it) }
+        layeredFancyRivers.rotateToLayer(rootTurn.get().id)
     }
 
     fun getBest(targetPlayer: Int): StatedRiver? {
-        return bestNextTurn.get().firstTurnFor(targetPlayer, rootTurn)?.deltaRiver
-    }
-
-    fun interrupt() {
-        interrupt.set(true)
+        return bestNextTurn.get().firstTurnFor(targetPlayer, rootTurn.get())?.deltaRiver
     }
 
     fun update(river: StatedRiver) {
-        Stat.start("update")
-        val skeleton = rootTurn.skeleton(river)
+        updateLock.withLock {
+            Stat.start("update")
+            val skeleton = rootTurn.get().skeleton(river)
+            val found = findBySkeleton(skeleton)
 
-        rootTurn = if (adultTurns.contains(skeleton))
-            matchedTurns[skeleton.hashCode()]!!.find { it == skeleton }!!
-        else
-            nextTurn(rootTurn, river.stateless(), river.state)
+            if (found != null)
+                rootTurn.set(found)
+            else {
+                println("no turn")
+                rootTurn.getAndUpdate {
+                    nextTurn(it, river.stateless(), river.state)
+                }
+            }
 
-        bestNextTurn.set(Turn.root())
-        System.gc()
-        Stat.end("update")
+            System.gc()
+            Stat.end("update")
+        }
     }
 
-    fun runCycle(targetPlayer: Int) {
+    private fun findBySkeleton(skeleton: Turn): Turn? = if (adultTurns.contains(skeleton))
+        matchedTurns[skeleton.hashCode()]!!.find { it == skeleton }!!
+    else null
+
+    fun startDoomMachine() {
         Stat.start("cycle")
-        interrupt.set(false)
         var depthCounter = 0
 
-        var nextTurns = setOf(rootTurn)
+        var nextTurns = setOf(rootTurn.get())
 
         for (i in 0 until depth) {
             depthCounter++
-            if (interrupt.get())
-                break
 
             nextTurns = nextRound(nextTurns, targetPlayer)
 
@@ -87,12 +96,9 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap, priv
 
     private fun nextRound(turnSet: Set<Turn>, targetPlayer: Int): Set<Turn> {
         var turns = turnSet
-        val delta = (rootTurn.deltaRiver?.state ?: -1) + 1
+        val delta = (rootTurn.get().deltaRiver?.state ?: -1) + 1
         for (i in 0 until playersAmount) {
             turns = turn((i + delta) % playersAmount, turns, targetPlayer)
-
-            if (interrupt.get())
-                break
         }
 
         return turns
@@ -103,15 +109,11 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap, priv
 
         Stat.start("turn")
 
-        rootLoop@ for (turn in turnSet) {
-            if (interrupt.get())
-                break
+        for (turn in turnSet) {
 
             var siblings = turn.siblings()
             if (turn !in adultTurns) {
                 for (river in layeredFancyRivers.get(turn.id)) {
-                    if (interrupt.get())
-                        break@rootLoop
 
                     val next = nextTurn(turn, river, playerN)
                     if (playerN == targetPlayer && next.score > bestNextTurn.get().score)
@@ -125,8 +127,7 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap, priv
                 else
                     matchedTurns[turn.hashCode()] = newWeakHashSet(turn)
             } else {
-                val matched = matchedTurns[turn.hashCode()]!!.find { it == turn }!!
-                println("Matched reused!")
+                val matched = findBySkeleton(turn)!!
                 turn.replaceBy(matched)
                 siblings = matched.siblings()
             }
@@ -150,8 +151,7 @@ class Minimax(private val playersAmount: Int, private val gameMap: GameMap, priv
 
         Stat.start("nextTurn")
 
-        idCounter++
-        val nextId = idCounter.toString()
+        val nextId = idCounter.incrementAndGet().toString()
         val idForConnections = parent.prevTurnOf(playerN).id
         val cons = layeredConnections[idForConnections]!!.addRiver(river)
         layeredConnections[nextId] = cons

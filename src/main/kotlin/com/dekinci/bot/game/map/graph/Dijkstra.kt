@@ -1,4 +1,4 @@
-package com.dekinci.bot.game.map.graphstuff
+package com.dekinci.bot.game.map.graph
 
 import java.util.*
 

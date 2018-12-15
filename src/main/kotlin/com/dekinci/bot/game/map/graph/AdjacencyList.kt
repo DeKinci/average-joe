@@ -1,8 +1,8 @@
-package com.dekinci.bot.game.map.graphstuff
+package com.dekinci.bot.game.map.graph
 
 import com.dekinci.bot.entities.River
 
-class AdjacencyList(vertexAmount: Int, rivers: List<River>) {
+class AdjacencyList(vertexAmount: Int, rivers: Array<River>) {
     val list: Array<HashSet<Int>> = Array(vertexAmount) { HashSet<Int>() }
 
     init {

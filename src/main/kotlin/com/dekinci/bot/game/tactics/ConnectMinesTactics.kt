@@ -6,12 +6,13 @@ import com.dekinci.bot.moves.Move
 import com.dekinci.bot.moves.PassMove
 
 class ConnectMinesTactics(
+        private val punter: Int,
         gameMap: GameMap,
         private val from: Int,
         private val to: Int
 ) : Tactics {
     private val aStar = PathFinder(gameMap)
-    private var sites = aStar.findPath(from, to)
+    private var sites = aStar.findPath(from, to, punter)
     private var prevStep = 0
     private var currentSite = from
 
@@ -22,7 +23,7 @@ class ConnectMinesTactics(
     override fun hasNext() = prevStep < (sites.size)
 
     override fun next(): Move {
-        val newSites = aStar.findPath(from, to)
+        val newSites = aStar.findPath(from, to, punter)
 
         if (sites != newSites) {
             println("path changed from $sites")

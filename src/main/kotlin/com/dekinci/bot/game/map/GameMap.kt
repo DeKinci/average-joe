@@ -1,65 +1,48 @@
 package com.dekinci.bot.game.map
 
-import com.dekinci.bot.entities.River
+import com.dekinci.bot.entities.BasicMap
 import com.dekinci.bot.entities.RiverStateID
-import com.dekinci.bot.game.GameState
-import com.dekinci.bot.game.map.graphstuff.AdjacencyList
-import com.dekinci.bot.game.map.graphstuff.AdjacencyMatrix
+import com.dekinci.bot.entities.StatedRiver
+import com.dekinci.bot.game.map.graph.AdjacencyList
+import com.dekinci.bot.game.map.graph.AdjacencyMatrix
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
-class GameMap(
-        size: Int,
-        val rivers: List<River>,
-        minesCollection: Collection<Int>,
-        sitesCollection: Collection<Int> = emptySet()
-) {
+class GameMap(val basicMap: BasicMap) {
     data class Island(val cost: Int, val sites: Set<Int>, val mines: Set<Int>)
 
-    private val adjMatrix = AdjacencyMatrix(size, rivers)
-    private val adjList = AdjacencyList(size, rivers)
-
-    val sites: Set<Int>
-    val mines = minesCollection.toHashSet()
+    private val adjMatrix = AdjacencyMatrix(basicMap.size, basicMap.rivers)
+    private val adjList = AdjacencyList(basicMap.size, basicMap.rivers)
 
     val islands: Set<Island>
 
-    val ourSites = HashSet<Int>()
-
-    val realMetrics = RealMetrics(size, adjList, mines)
+    val realMetrics = RealMetrics(basicMap.size, adjList, basicMap.mines)
 
     init {
         realMetrics.calculate()
-
-        val siteSet = HashSet<Int>(sitesCollection)
-        if (siteSet.isEmpty())
-            rivers.forEach {
-                siteSet.add(it.source)
-                siteSet.add(it.target)
-            }
-        sites = siteSet
-
         islands = initIslands()
     }
 
     private fun initIslands(): Set<Island> {
-        data class Island(var cost: Int, val sites: HashSet<Int>)
+        data class TempIsland(var cost: Int, val sites: HashSet<Int> = HashSet())
 
-        val islandMap = HashMap<List<Int>, Island>()
+        val islandMap = HashMap<Set<Int>, TempIsland>()
 
-        for (site in sites) {
-            val determiner = realMetrics.getAllMines(site)
+        (0 until basicMap.size).forEach {
+            val connectedMines = realMetrics.getAllMines(it)
 
-            if (determiner !in islandMap)
-                islandMap[determiner] = Island(0, HashSet())
-
-            val isl = islandMap[determiner]!!
-            isl.cost += realMetrics.getForAllMines(site, mines)
-            isl.sites.add(site)
+            islandMap.getOrPut(connectedMines) { TempIsland(0) }.apply {
+                cost += realMetrics.getForAllMines(it, connectedMines)
+                sites.add(it)
+            }
         }
 
-        return islandMap.values.map { GameMap.Island(it.cost, it.sites, it.sites.intersect(mines)) }.toSet()
+        return islandMap.entries.map { Island(it.value.cost, it.value.sites, it.key) }.toHashSet()
+    }
+
+    fun update(statedRiver: StatedRiver) {
+        adjMatrix[statedRiver.source, statedRiver.target] = statedRiver.state
     }
 
     fun hasFreeConnections(site: Int): Boolean = adjMatrix.hasFreeConnections(site)
@@ -78,22 +61,9 @@ class GameMap(
         return false
     }
 
-    fun getFreeConnections(site: Int): Collection<Int> {
-        return getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL }
-    }
+    fun getFreeConnections(site: Int): Collection<Int> =
+            getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL }
 
-    fun getAvailableConnections(site: Int): Collection<Int> {
-        return getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL || adjMatrix[site, it] == GameState.ID }
-    }
-
-    fun isSiteMine(site: Int): Boolean = mines.contains(site)
-
-    fun claim(from: Int, to: Int, id: Int) {
-        adjMatrix[from, to] = id
-
-        if (id == GameState.ID) {
-            ourSites.add(from)
-            ourSites.add(to)
-        }
-    }
+    fun getAvailableConnections(site: Int, punter: Int): Collection<Int> =
+            getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL || adjMatrix[site, it] == punter }
 }

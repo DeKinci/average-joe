@@ -1,90 +1,15 @@
 package com.dekinci.bot
 
 import com.dekinci.bot.entities.StatedRiver
-import com.dekinci.bot.game.GameState
-import com.dekinci.bot.game.Intellect
-import ru.spbstu.competition.protocol.Protocol
-import ru.spbstu.competition.protocol.ServerConnection
-import ru.spbstu.competition.protocol.data.*
 
-class Bot(private val name: String, connection: ServerConnection) : Runnable {
-    private var intellect: Intellect? = null
-    private var gameState: GameState? = null
+interface Bot {
+    val name: String
 
-    private val protocol = Protocol(connection)
-
-    @Volatile
-    var isPlaying = false
-
-    override fun run() {
-        initialize()
-        playAGame()
-        println("$name finished")
+    fun onTimeout() {
+        println("$name too slow =(")
     }
 
-    private fun initialize() {
-        println("Hi, I am $name, the ultimate punter!")
+    fun onUpdate(statedRiver: StatedRiver)
 
-        protocol.handShake(name)
-        val setupData = protocol.setup()
-        println("""setup passed with
-            ${setupData.map.sites.size} nodes,
-            ${setupData.map.rivers.size} rivers and
-            ${setupData.map.mines.size} mines""".trimMargin())
-
-        isPlaying = true
-
-        gameState = GameState(setupData)
-        intellect = Intellect(gameState!!)
-
-        println("Received id = ${setupData.punter}")
-
-        protocol.ready()
-    }
-
-    private fun playAGame() {
-        var passCounter = 0
-
-        while (isPlaying) {
-            val message = protocol.serverMessage()
-
-            when (message) {
-                is GameResult -> {
-                    println("The game is over!")
-                    val myScore = message.stop.scores[protocol.myId]
-                    println("$name scored ${myScore.score} points!")
-                    isPlaying = false
-                }
-
-                is Timeout -> println("$name too slow =(")
-
-                is GameTurnMessage ->
-                    message.move.moves
-                            .filterIsInstance<ClaimMove>()
-                            .forEach { claimRiver(it.claim) }
-            }
-
-            if (!isPlaying)
-                break
-
-            val move = intellect!!.chooseMove()
-
-            if (move is com.dekinci.bot.moves.PassMove)
-                passCounter++
-            else
-                passCounter = 0
-
-            if (passCounter > 15) {
-                System.err.println("Exiting because of passes")
-                break
-            }
-
-            move.move(protocol)
-        }
-    }
-
-    private fun claimRiver(claim: Claim) {
-        gameState?.update(claim)
-        intellect?.update(StatedRiver(claim))
-    }
+    fun getMove(): StatedRiver?
 }

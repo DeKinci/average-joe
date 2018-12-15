@@ -1,13 +1,13 @@
 package com.dekinci.bot.game.map
 
 import com.dekinci.bot.entities.River
-import com.dekinci.bot.game.map.graphstuff.AdjacencyList
-import com.dekinci.bot.game.map.graphstuff.Dijkstra
+import com.dekinci.bot.game.map.graph.AdjacencyList
+import com.dekinci.bot.game.map.graph.Dijkstra
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
 class RealMetrics(
-        private val sitesAmount: Int,
+        internal val sitesAmount: Int,
         private val totalList: AdjacencyList,
         private val mines: Set<Int>
 ) {
@@ -37,7 +37,12 @@ class RealMetrics(
 
     fun mineCost(mine: Int) = weights[mine]!!.sumBy { if (it >= 0) it else 0 }
 
-    fun getAllMines(site: Int) = mines.filter { weights[it]!![site] > -1 }
+    fun siteCost(site: Int) = mines.sumBy {
+        val weight = weights[it]!![site]
+        if (weight >= 0) weight else 0
+    }
+
+    fun getAllMines(site: Int): Set<Int> = mines.filter { weights[it]!![site] > -1 }.toHashSet()
 
     fun getForAllMines(site: Int, mines: Collection<Int>): Int = mines.filter { weights[it]!![site] > -1 }.sumBy { weights[it]!![site] }
 

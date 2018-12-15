@@ -60,7 +60,7 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
         println("Chosen possible cities: $cities")
 
         var possibleCities = cities
-                .filter { !gameState.gameMap.ourSites.contains(it.first) }
+//                .filter { !gameState.gameMap.ourSites.contains(it.first) } TODO
 
         if (possibleCities.isEmpty()) {
             tactics = PassTactics()
@@ -109,18 +109,20 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
             }
 
         println("Chosen cities: $first, $second")
-        tactics = ConnectMinesTactics(gameState.gameMap, first, second)
+        tactics = ConnectMinesTactics(gameState.punter, gameState.gameMap, first, second)
         return true
     }
 
     private fun estimateK(from: Int, to: Int): Int {
         val pf = PathFinder(gameState.gameMap)
 
-        val threshold = min(gameState.gameMap.getAvailableConnections(from).size, gameState.gameMap.getAvailableConnections(to).size)
+        val threshold = min(
+                gameState.gameMap.getAvailableConnections(from, gameState.punter).size,
+                gameState.gameMap.getAvailableConnections(to, gameState.punter).size)
 
         val listPaths = ArrayList<List<Int>>()
         while (listPaths.size <= threshold) {
-            val path = pf.findPath(from, to, listPaths)
+            val path = pf.findPath(from, to, gameState.punter, listPaths)
             if (!path.isEmpty())
                 listPaths.add(listOf(from) + path)
             else

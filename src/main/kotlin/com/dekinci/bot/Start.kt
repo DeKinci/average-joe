@@ -1,5 +1,6 @@
 package com.dekinci.bot
 
+import com.dekinci.bot.entities.BasicMap
 import com.dekinci.bot.game.minimax.Stat
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
@@ -19,11 +20,17 @@ object Arguments {
 fun main(args: Array<String>) {
     Arguments.use(args)
 
-    val name = "Vladimir Nedomax"
     val connection = ServerConnection(Arguments.url, Arguments.port)
 
-    val jack = Bot(name, connection)
-    Thread(jack).start()
+    val br = BotRunner()
 
     Runtime.getRuntime().addShutdownHook(Thread { println(Stat.toString()) })
+    br.runBot(connection, MinimaxFactory()).get()
+    br.shutdown()
+}
+
+class MinimaxFactory : BotFactory {
+    override fun getBotName() = "Vladimir Minimax"
+
+    override fun makeBot(punter: Int, punters: Int, map: BasicMap) = BotImpl(getBotName(), punter, punters, map)
 }

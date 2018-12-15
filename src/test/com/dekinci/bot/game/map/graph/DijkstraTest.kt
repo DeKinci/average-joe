@@ -1,13 +1,11 @@
 import com.dekinci.bot.entities.River
-import com.dekinci.bot.entities.StatedRiver
-import com.dekinci.bot.game.map.graphstuff.AdjacencyList
-import com.dekinci.bot.game.map.graphstuff.Dijkstra
-
-import org.junit.jupiter.api.Assertions.*
+import com.dekinci.bot.game.map.graph.AdjacencyList
+import com.dekinci.bot.game.map.graph.Dijkstra
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class DijkstraJTest {
+class DijkstraTest {
     private val INF = Integer.MAX_VALUE / 2
 
     @Test
@@ -28,13 +26,12 @@ class DijkstraJTest {
         for (i in 0 until data.size step 2)
             riverList.add(River(data[i], data[i + 1]))
 
-        val dijkstra = Dijkstra(vertexAmount, AdjacencyList(vertexAmount, riverList))
+        val dijkstra = Dijkstra(vertexAmount, AdjacencyList(vertexAmount, riverList.toTypedArray()))
         return dijkstra.sparse(start)
     }
 
     @Test
     fun testDiv() {
-
         println(Arrays.toString(dijkstraDivided(5)))
     }
 
@@ -57,7 +54,7 @@ class DijkstraJTest {
         for (i in 0 until data.size step 2)
             riverList.add(River(data[i], data[i + 1]))
 
-        val dijkstra = Dijkstra(vertexAmount, AdjacencyList(vertexAmount, riverList))
+        val dijkstra = Dijkstra(vertexAmount, AdjacencyList(vertexAmount, riverList.toTypedArray()))
         return dijkstra.sparse(start)
     }
 
