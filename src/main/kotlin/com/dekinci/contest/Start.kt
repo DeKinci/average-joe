@@ -4,6 +4,7 @@ import com.dekinci.contest.bot.BotFactory
 import com.dekinci.contest.bot.BotImpl
 import com.dekinci.contest.bot.BotRunner
 import com.dekinci.contest.bot.MathBot
+import com.dekinci.contest.common.Log.info
 import com.dekinci.contest.entities.BasicMap
 import com.dekinci.contest.game.minimax.Stat
 import org.kohsuke.args4j.CmdLineParser
@@ -23,12 +24,13 @@ object Arguments {
 
 fun main(args: Array<String>) {
     Arguments.use(args)
+    info("Starting on ${Arguments.url} : ${Arguments.port}")
 
     val connection = ServerConnection(Arguments.url, Arguments.port)
 
     val br = BotRunner()
 
-    Runtime.getRuntime().addShutdownHook(Thread { println(Stat.toString()) })
+    Runtime.getRuntime().addShutdownHook(Thread { info(Stat.toString()) })
     br.runBot(connection, MatBoiFactory()).get()
     br.shutdown()
 }

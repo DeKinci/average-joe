@@ -1,5 +1,7 @@
 package com.dekinci.contest.game.minimax
 
+import com.dekinci.contest.common.Log.debug
+import com.dekinci.contest.common.Log.trace
 import com.dekinci.contest.common.newWeakHashSet
 import com.dekinci.contest.entities.River
 import com.dekinci.contest.entities.StatedRiver
@@ -46,7 +48,7 @@ class Minimax(
         if (found != null)
             rootTurn.set(found)
         else {
-            println("no turn")
+            trace("no turn")
             val rt = rootTurn.get()
             rootTurn.set (nextTurn(rt, river.stateless(), river.state))
         }
@@ -77,7 +79,7 @@ class Minimax(
                 break
         }
 
-        println("Depth: $depthCounter")
+        debug("Depth: $depthCounter")
         Stat.end("cycle")
     }
 

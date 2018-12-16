@@ -1,5 +1,6 @@
 package com.dekinci.contest.game.tactics
 
+import com.dekinci.contest.common.Log.trace
 import com.dekinci.contest.game.map.GameMap
 
 import java.util.*
@@ -21,7 +22,7 @@ class PathFinder(private val map: GameMap) {
     private val parentMap = HashMap<Int, Int>()
 
     fun findPath(start: Int, finish: Int, punter: Int, excludePaths: List<List<Int>> = emptyList()): List<Int> {
-        println("Finding path from $start to $finish")
+        trace("Finding path from $start to $finish")
 
         val openList = PriorityQueue<Int>()
         val closedList = LinkedList<Int>()
@@ -74,7 +75,7 @@ class PathFinder(private val map: GameMap) {
             varNode = parentMap[varNode]!!
         }
 
-        println("Path found: $path")
+        trace("Path found: $path")
 
         return path
     }

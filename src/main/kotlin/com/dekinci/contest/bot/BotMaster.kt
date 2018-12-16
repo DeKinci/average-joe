@@ -1,5 +1,10 @@
 package com.dekinci.contest.bot
 
+import com.dekinci.contest.common.Log.debug
+import com.dekinci.contest.common.Log.err
+import com.dekinci.contest.common.Log.info
+import com.dekinci.contest.common.Log.trace
+import com.dekinci.contest.common.Log.warn
 import com.dekinci.contest.entities.Rectifier
 import com.dekinci.contest.entities.StatedRiver
 import com.dekinci.contest.protocol.*
@@ -17,26 +22,27 @@ class BotMaster(connection: ServerConnection, botFactory: BotFactory) {
     private val bot: Bot
 
     init {
-        println("Hi, I am ${botFactory.getBotName()}, the ultimate punter!")
+        info("Hi, I am ${botFactory.getBotName()}, the ultimate punter!")
         protocol.handShake(botFactory.getBotName())
 
         val setupData = protocol.setup()
-        println("""setup passed with
-            ${setupData.map.sites.size} nodes,
-            ${setupData.map.rivers.size} rivers and
-            ${setupData.map.mines.size} mines""".trimMargin())
+        info(("setup passed with " +
+                "${setupData.map.sites.size} nodes, " +
+                "${setupData.map.rivers.size} rivers and " +
+                "${setupData.map.mines.size} mines").trimMargin())
 
         rectifier = Rectifier(setupData.map.rivers, setupData.map.mines)
 
         bot = botFactory.makeBot(setupData.punter, setupData.punters, rectifier.asMap())
         protocol.ready()
         playingFlag.set(true)
-        println("Received id = ${setupData.punter}")
+        info("Received id = ${setupData.punter}")
     }
 
     fun play() {
-        println("${bot.name} started")
+        debug("${bot.name} started")
         gameCycle@ while (playingFlag.get()) {
+            trace("Game iteration")
             val message = protocol.serverMessage()
             handleMessage(message)
 
@@ -46,11 +52,12 @@ class BotMaster(connection: ServerConnection, botFactory: BotFactory) {
             makeAMove()
         }
         bot.onFinish()
-        println("${bot.name} finished")
+        debug("${bot.name} finished")
     }
 
     private fun makeAMove() {
         val move = bot.getMove()
+        debug("Move: $move")
         if (move == null)
             handlePass()
         else {
@@ -64,11 +71,12 @@ class BotMaster(connection: ServerConnection, botFactory: BotFactory) {
             is GameTurnMessage -> handleTurn(message)
             is Timeout -> handleTimeout()
             is GameResult -> handleResult(message)
-            else -> System.err.println("Strange message: $message")
+            else -> warn("Strange message: $message")
         }
     }
 
     private fun handleTurn(move: GameTurnMessage) {
+        trace("Turn: ${move.move}")
         passStreak.set(0)
         move.move.moves
                 .filterIsInstance<ClaimMove>()
@@ -77,19 +85,21 @@ class BotMaster(connection: ServerConnection, botFactory: BotFactory) {
     }
 
     private fun handleTimeout() {
+        err("Timeout")
         handlePass()
         bot.onTimeout()
     }
 
     private fun handlePass() {
+        warn("Pass move")
         if (passStreak.incrementAndGet() > 11)
             playingFlag.set(false)
     }
 
     private fun handleResult(result: GameResult) {
         val myScore = result.stop.scores[protocol.myId]
-        println("The game is over!")
-        println("${bot.name} scored ${myScore.score} points!")
+        info("The game is over!")
+        info("${bot.name} scored ${myScore.score} points!")
         playingFlag.set(false)
     }
 }

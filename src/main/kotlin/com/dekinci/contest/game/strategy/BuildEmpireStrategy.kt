@@ -1,5 +1,9 @@
 package com.dekinci.contest.game.strategy
 
+import com.dekinci.contest.common.Log.debug
+import com.dekinci.contest.common.Log.err
+import com.dekinci.contest.common.Log.trace
+import com.dekinci.contest.common.Log.warn
 import com.dekinci.contest.entities.StatedRiver
 import com.dekinci.contest.game.GameState
 import com.dekinci.contest.game.map.GameMap
@@ -49,44 +53,44 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
             if (island == null || isl.cost > island!!.cost)
                 island = isl
 
-        println("Chosen island cost: ${island!!.cost}, mines: ${island!!.mines}")
+        debug("Chosen island cost: ${island!!.cost}, mines: ${island!!.mines}")
     }
 
     private fun chooseTactics(): Boolean {
         val cities = island!!.mines
                 .map { it to gameState.gameMap.squareMetrics.mineCost(it).toDouble() }
                 .sortedBy { it.second }.reversed()
-        println("Chosen possible cities: $cities")
+        trace("Chosen possible cities: $cities")
 
         var possibleCities = cities
 //                .filter { !gameState.gameMap.ourSites.contains(it.first) } TODO
 
         if (possibleCities.isEmpty()) {
             tactics = PassTactics()
-            println("No possible cities")
+            warn("No possible cities")
             return false
         }
 
         if (possibleCities.size < 2)
             possibleCities += cities.subtract(possibleCities).take(1)
-        println("Chosen possible cities: $possibleCities")
+        trace("Chosen possible cities: $possibleCities")
 
         val bestCity = possibleCities.maxBy { it.second }
 
         if (bestCity == null) {
-            println("Could not find best city")
+            err("Could not find best city")
             tactics = PassTactics()
             return false
         }
 
-        println("best city is ${bestCity.first} with a score ${bestCity.second}")
+        trace("best city is ${bestCity.first} with a score ${bestCity.second}")
 
         val fancyScore = bestCity.second * 0.9
         val fancyCities = possibleCities.filter { it.second >= fancyScore }.toMutableList()
         if (fancyCities.size < 2)
             fancyCities.add(possibleCities.subList(1, possibleCities.size).first())
 
-        println("Chosen fancy cities: $fancyCities")
+        trace("Chosen fancy cities: $fancyCities")
 
         var first = -1
         var second = -1
@@ -97,17 +101,16 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
             for (b in 0 until a) {
                 val metric = (fancyCities[a].second + fancyCities[b].second) /
                         (1.1 - 1 / Math.pow(estimateK(fancyCities[a].first, fancyCities[b].first).toDouble(), 2.0))
-                println("Metric for ${fancyCities[a].first} to ${fancyCities[b].first} is $metric")
+                trace("Metric for ${fancyCities[a].first} to ${fancyCities[b].first} is $metric")
 
                 if (metric > maxMetric) {
-                    println("Metric is better!")
                     maxMetric = metric
                     first = fancyCities[a].first
                     second = fancyCities[b].first
                 }
             }
 
-        println("Chosen cities: $first, $second")
+        debug("Chosen cities: $first, $second")
         tactics = ConnectMinesTactics(gameState.punter, gameState.gameMap, first, second)
         return true
     }
@@ -128,7 +131,7 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
                 break
         }
 
-        println("Estimated K from $from to $to is ${listPaths.size}")
+        trace("Estimated K from $from to $to is ${listPaths.size}")
         return listPaths.size
     }
 }

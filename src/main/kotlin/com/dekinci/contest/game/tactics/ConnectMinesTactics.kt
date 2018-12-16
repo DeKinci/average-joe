@@ -1,5 +1,6 @@
 package com.dekinci.contest.game.tactics
 
+import com.dekinci.contest.common.Log.trace
 import com.dekinci.contest.entities.StatedRiver
 import com.dekinci.contest.game.map.GameMap
 
@@ -24,12 +25,12 @@ class ConnectMinesTactics(
         val newSites = aStar.findPath(from, to, punter)
 
         if (sites != newSites) {
-            println("path changed from $sites")
-            println("path changed to   $newSites")
+            trace("path changed from $sites")
+            trace("path changed to   $newSites")
 
-            println("prevstep changed from $prevStep")
+            trace("prevstep changed from $prevStep")
             prevStep = sites.commonUntil(newSites)
-            println("prevstep changed to   $prevStep")
+            trace("prevstep changed to   $prevStep")
             sites = newSites
         }
 

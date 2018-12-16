@@ -1,5 +1,6 @@
 package com.dekinci.contest.game.map.graph
 
+import com.dekinci.contest.common.Log
 import com.dekinci.contest.entities.River
 import com.dekinci.contest.entities.RiverStateID
 import java.util.*
@@ -14,7 +15,7 @@ class AdjacencyMatrix (private val size: Int, rivers: Array<River>) {
             matrix[row][cell] = RiverStateID.NEUTRAL
             matrix[cell][row] = RiverStateID.NEUTRAL
         }
-        println("adj matrix created and filled with rivers...")
+        Log.debug("adj matrix created and filled with rivers...")
     }
 
     fun getConnections(site: Int): Collection<Int> {

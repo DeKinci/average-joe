@@ -1,5 +1,6 @@
 package com.dekinci.contest.game.map
 
+import com.dekinci.contest.common.Log.debug
 import com.dekinci.contest.entities.River
 import com.dekinci.contest.game.map.graph.AdjacencyList
 import com.dekinci.contest.game.map.graph.Dijkstra
@@ -17,14 +18,14 @@ class DistanceMetrics(
     private val weights = ConcurrentHashMap<Int, IntArray>(mines.size)
 
     fun calculate() {
-        println("metrics started")
+        debug("metrics started")
         val timestamp = System.currentTimeMillis()
         runBlocking {
             mines.map { async { calculateMineRelatedMetrics(it) } }
                     .forEach { it.await() }
         }
 
-        println("metrics created for: ${(System.currentTimeMillis() - timestamp).toDouble() / 1000}")
+        debug("metrics created for: ${(System.currentTimeMillis() - timestamp).toDouble() / 1000}")
     }
 
     private fun calculateMineRelatedMetrics(mine: Int) {

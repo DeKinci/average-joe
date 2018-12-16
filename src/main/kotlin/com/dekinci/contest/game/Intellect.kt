@@ -1,5 +1,7 @@
 package com.dekinci.contest.game
 
+import com.dekinci.contest.common.Log.debug
+import com.dekinci.contest.common.Log.warn
 import com.dekinci.contest.entities.StatedRiver
 import com.dekinci.contest.game.minimax.Minimax
 import java.util.concurrent.Executors
@@ -20,7 +22,7 @@ class Intellect(private val gameState: GameState) {
     fun getRiver(): StatedRiver? {
         val move = chooseBest()
 
-        println("Move is: $move")
+        debug("Move is: $move")
         return move
     }
 
@@ -29,7 +31,7 @@ class Intellect(private val gameState: GameState) {
         val river = maxRef.getBest(gameState.punter)
 
         if (river == null) {
-            System.err.println("PassMove returned!")
+            warn("PassMove returned!")
             return null
         }
 

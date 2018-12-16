@@ -23,7 +23,7 @@ internal class MathBotTest {
 
     @Test
     fun testCo() {
-        val p = 2
+        val p = 4
         val map = disconnectedMap()
         val bots = Array<Bot>(p) { MathBot("", it, p, map.basicMap) }
 
