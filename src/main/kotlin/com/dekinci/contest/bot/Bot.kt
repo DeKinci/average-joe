@@ -12,4 +12,6 @@ interface Bot {
     fun onUpdate(statedRiver: StatedRiver)
 
     fun getMove(): StatedRiver?
+
+    fun onFinish()
 }

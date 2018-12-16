@@ -45,6 +45,7 @@ class BotMaster(connection: ServerConnection, botFactory: BotFactory) {
 
             makeAMove()
         }
+        bot.onFinish()
         println("${bot.name} finished")
     }
 

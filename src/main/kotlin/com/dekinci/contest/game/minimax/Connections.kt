@@ -1,7 +1,7 @@
 package com.dekinci.contest.game.minimax
 
 import com.dekinci.contest.entities.River
-import com.dekinci.contest.game.map.RealMetrics
+import com.dekinci.contest.game.map.DistanceMetrics
 import java.util.*
 import kotlin.collections.HashSet
 
@@ -67,7 +67,7 @@ class Connections(private val allMines: Set<Int>) {
         groups.add(ncg)
     }
 
-    fun cost(metrics: RealMetrics): Int {
+    fun cost(metrics: DistanceMetrics): Int {
         var result = 0
         for (group in groups) {
             result += group.mines.sumBy { metrics.costHavingSites(it, group.sites) }

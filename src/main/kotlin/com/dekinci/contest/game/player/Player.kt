@@ -20,7 +20,7 @@ class Player(
 
     private fun recount(): Int {
         val oldScore = score
-        score = map.realMetrics.costHaving(sites.union(mines))
+        score = map.squareMetrics.costHaving(sites.union(mines))
         return score - oldScore
     }
 }

@@ -28,7 +28,7 @@ sealed class Move {
         fun factory(map: kotlin.collections.Map<String, Any>): Move {
             return when {
                 "pass" in map -> objectMapper.convertValue(map, PassMove::class.java)
-                "update" in map -> objectMapper.convertValue(map, ClaimMove::class.java)
+                "claim" in map -> objectMapper.convertValue(map, ClaimMove::class.java)
                 else -> throw IllegalArgumentException()
             }
         }

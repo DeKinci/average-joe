@@ -21,5 +21,7 @@ class AdjacencyList(vertexAmount: Int, rivers: Array<River>) {
         list[to].remove(from)
     }
 
+    fun countConnections(site: Int) = list[site].size
+
     operator fun get(from: Int): Collection<Int> = list[from]
 }

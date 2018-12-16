@@ -6,23 +6,24 @@ import com.dekinci.contest.game.map.graph.Dijkstra
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
 
 
-class RealMetrics(
-        internal val sitesAmount: Int,
+class DistanceMetrics(
+        private val sitesAmount: Int,
         private val totalList: AdjacencyList,
-        private val mines: Set<Int>
+        private val mines: Set<Int>,
+        private val operation: (Int) -> Int
 ) {
     private val weights = ConcurrentHashMap<Int, IntArray>(mines.size)
 
     fun calculate() {
         println("metrics started")
         val timestamp = System.currentTimeMillis()
-        val executor = Executors.newCachedThreadPool()
-        mines.map { executor.submit { calculateMineRelatedMetrics(it) } }.forEach { it.get() }
+        runBlocking {
+            mines.map { async { calculateMineRelatedMetrics(it) } }
+                    .forEach { it.await() }
+        }
 
-        executor.shutdown()
         println("metrics created for: ${(System.currentTimeMillis() - timestamp).toDouble() / 1000}")
     }
 
@@ -34,7 +35,7 @@ class RealMetrics(
 
         metricsRelatedToMine.forEachIndexed { site, weight ->
             if (weight != -1)
-                weights[mine]!![site] = weight * weight
+                weights[mine]!![site] = operation.invoke(weight)
         }
     }
 
@@ -43,6 +44,16 @@ class RealMetrics(
     fun siteCost(site: Int) = mines.sumBy {
         val weight = weights[it]!![site]
         if (weight >= 0) weight else 0
+    }
+
+    fun minSiteCost(site: Int) = mines.minBy {
+        val weight = weights[it]!![site]
+        if (weight >= 0) weight else Int.MAX_VALUE
+    }
+
+    fun maxSiteCost(site: Int) = mines.maxBy {
+        val weight = weights[it]!![site]
+        if (weight >= 0) weight else Int.MIN_VALUE
     }
 
     fun getJointMines(site: Int): Set<Int> = mines.filter { weights[it]!![site] > -1 }.toHashSet()

@@ -54,7 +54,7 @@ class BuildEmpireStrategy(private val gameState: GameState) : Strategy {
 
     private fun chooseTactics(): Boolean {
         val cities = island!!.mines
-                .map { it to gameState.gameMap.realMetrics.mineCost(it).toDouble() }
+                .map { it to gameState.gameMap.squareMetrics.mineCost(it).toDouble() }
                 .sortedBy { it.second }.reversed()
         println("Chosen possible cities: $cities")
 

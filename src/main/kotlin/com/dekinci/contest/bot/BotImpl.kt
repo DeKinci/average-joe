@@ -17,4 +17,8 @@ class BotImpl(override val name: String, punter: Int, punters: Int, map: BasicMa
     override fun getMove(): StatedRiver? {
         return intellect.getRiver()
     }
+
+    override fun onFinish() {
+        intellect.finish()
+    }
 }

@@ -48,7 +48,7 @@ class PathFinder(private val map: GameMap) {
                 val isClosed = closedList.contains(neighbor)
 
                 if (!isOpen && !isClosed &&
-                        map.realMetrics[start, node] < map.realMetrics[start, neighbor] &&
+                        map.squareMetrics[start, node] < map.squareMetrics[start, neighbor] &&
                         !excludedTwoWayPaths.contains(TwoWayPath(node, neighbor))) {
                     parentMap[neighbor] = node
 

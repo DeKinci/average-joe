@@ -15,12 +15,17 @@ class GameMap(val basicMap: BasicMap) {
     private val adjMatrix = AdjacencyMatrix(basicMap.size, basicMap.rivers)
     private val adjList = AdjacencyList(basicMap.size, basicMap.rivers)
 
+    private val freeAdjList = AdjacencyList(basicMap.size, basicMap.rivers)
+
     val islands: Set<Island>
 
-    val realMetrics = RealMetrics(basicMap.size, adjList, basicMap.mines)
+    val squareMetrics = DistanceMetrics(basicMap.size, adjList, basicMap.mines) { it * it }
+    val linearMetrics = DistanceMetrics(basicMap.size, adjList, basicMap.mines) { it }
+    val connectionsMetrics = ConnectionsMetrics(basicMap.size, adjList)
 
     init {
-        realMetrics.calculate()
+        squareMetrics.calculate()
+        linearMetrics.calculate()
         islands = initIslands()
     }
 
@@ -30,10 +35,10 @@ class GameMap(val basicMap: BasicMap) {
         val islandMap = HashMap<Set<Int>, TempIsland>()
 
         (0 until basicMap.size).forEach {
-            val connectedMines = realMetrics.getJointMines(it)
+            val connectedMines = squareMetrics.getJointMines(it)
 
             islandMap.getOrPut(connectedMines) { TempIsland(0) }.apply {
-                cost += realMetrics.costHavingMines(it, connectedMines)
+                cost += squareMetrics.costHavingMines(it, connectedMines)
                 sites.add(it)
             }
         }
@@ -43,9 +48,12 @@ class GameMap(val basicMap: BasicMap) {
 
     fun update(statedRiver: StatedRiver) {
         adjMatrix[statedRiver.source, statedRiver.target] = statedRiver.state
+        freeAdjList.removeEdge(statedRiver.source, statedRiver.target)
+        connectionsMetrics.update(statedRiver.source)
+        connectionsMetrics.update(statedRiver.target)
     }
 
-    fun hasFreeConnections(site: Int): Boolean = adjMatrix.hasFreeConnections(site)
+    fun hasFreeConnections(site: Int): Boolean = freeAdjList.countConnections(site) != 0
 
     fun isSiteConnectedWithAny(first: Int, others: Collection<Int>) = !Collections.disjoint(adjList[first], others)
 
@@ -61,8 +69,7 @@ class GameMap(val basicMap: BasicMap) {
         return false
     }
 
-    fun getFreeConnections(site: Int): Collection<Int> =
-            getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL }
+    fun getFreeConnections(site: Int): Collection<Int> = freeAdjList[site]
 
     fun getAvailableConnections(site: Int, punter: Int): Collection<Int> =
             getConnections(site).filter { adjMatrix[site, it] == RiverStateID.NEUTRAL || adjMatrix[site, it] == punter }

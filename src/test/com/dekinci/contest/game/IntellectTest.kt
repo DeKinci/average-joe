@@ -14,5 +14,6 @@ internal class IntellectTest {
         val int = Intellect(createState())
         for (i in 0 .. 12)
             println(int.getRiver())
+        int.finish()
     }
 }

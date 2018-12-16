@@ -35,6 +35,6 @@ internal class ConnectionsTest {
                 .addRiver(River(4, 7))
                 .addRiver(River(5, 8))
 
-        assertEquals(7, newC.cost(gm.realMetrics))
+        assertEquals(7, newC.cost(gm.squareMetrics))
     }
 }

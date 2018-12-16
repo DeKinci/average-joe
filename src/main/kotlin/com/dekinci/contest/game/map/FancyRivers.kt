@@ -9,9 +9,14 @@ class FancyRivers(private val gameMap: GameMap) {
         gameMap.basicMap.mines.forEach { siteChange(it) }
     }
 
-    fun claim(from: Int, to: Int) {
-        siteChange(from)
-        siteChange(to)
+    fun update(river: River) {
+        rivers.remove(river)
+        siteChange(river.target)
+        siteChange(river.source)
+    }
+
+    fun remove(river: River) {
+        rivers.remove(river)
     }
 
     private fun siteChange(site: Int) {

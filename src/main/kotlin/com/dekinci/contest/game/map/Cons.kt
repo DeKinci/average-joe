@@ -3,7 +3,7 @@ package com.dekinci.contest.game.map
 import com.dekinci.contest.entities.River
 import java.util.*
 
-class Cons(private val allMines: Set<Int>, rivers: Iterable<River>) {
+class Cons(private val allMines: Set<Int>, rivers: Iterable<River> = emptySet()) {
 
     inner class Group {
         private val mines = HashSet<Int>()
@@ -24,33 +24,31 @@ class Cons(private val allMines: Set<Int>, rivers: Iterable<River>) {
             val source = river.source
             val target = river.target
 
-            if (allMines.contains(source)) {
+            if (allMines.contains(source))
                 mines.add(source)
-                sites.add(source)
-            }
 
-            if (allMines.contains(target)) {
+            if (allMines.contains(target))
                 mines.add(target)
-                sites.add(target)
-            }
 
-            if (sites.contains(river.source))
-                sites.add(river.target)
-            else if (sites.contains(river.target))
-                sites.add(river.source)
+            sites.add(river.target)
+            sites.add(river.source)
         }
     }
 
-    private val groups = Collections.newSetFromMap(IdentityHashMap<Group, Boolean>())
+    private val groups = Collections.newSetFromMap(HashMap<Group, Boolean>())
 
     init {
-        rivers.forEach { river ->
-            val toMerge = groups.filter { it.fits(river) }
-            when {
-                toMerge.isEmpty() -> newGroupFrom(river)
-                toMerge.size == 1 -> toMerge.first().add(river)
-                else -> mergeOn(river, toMerge)
-            }
+        rivers.forEach {
+            addRiver(it)
+        }
+    }
+
+    fun addRiver(river: River) {
+        val toMerge = groups.filter { it.fits(river) }
+        when {
+            toMerge.isEmpty() -> newGroupFrom(river)
+            toMerge.size == 1 -> toMerge.first().add(river)
+            else -> mergeOn(river, toMerge)
         }
     }
 
