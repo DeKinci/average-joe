@@ -1,4 +1,4 @@
-package com.dekinci.contest.game.map
+package com.dekinci.contest.game.map.metric
 
 import com.dekinci.contest.game.map.graph.AdjacencyList
 

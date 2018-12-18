@@ -1,7 +1,7 @@
 package com.dekinci.contest.game.minimax
 
 import com.dekinci.contest.entities.River
-import com.dekinci.contest.game.map.DistanceMetrics
+import com.dekinci.contest.game.map.metric.DistanceMetrics
 import java.util.*
 import kotlin.collections.HashSet
 

@@ -1,11 +1,12 @@
 package com.dekinci.contest.bot
 
-import com.dekinci.contest.common.riversToSiteSet
 import com.dekinci.contest.entities.BasicMap
+import com.dekinci.contest.entities.River
 import com.dekinci.contest.entities.StatedRiver
 import com.dekinci.contest.game.GameState
 import com.dekinci.contest.game.map.Cons
 import com.dekinci.contest.game.map.FancyRivers
+import kotlin.math.roundToInt
 
 class MathBot(override val name: String, punter: Int, punters: Int, map: BasicMap) : Bot {
     private enum class Time {
@@ -28,9 +29,10 @@ class MathBot(override val name: String, punter: Int, punters: Int, map: BasicMa
     }
 
     override fun getMove(): StatedRiver? {
-        val max = riversToSiteSet(fr.getRivers()).toMutableList().maxWith(getComp())
+        val c = getComp()
+        val max = fr.getRivers().maxWith(c)
         if (max != null) {
-            val maxes = fr.getRivers().filter { it.has(max) }
+            val maxes = fr.getRivers().filter { c.compare(it, max) == 0 }
             val move = maxes.random().stated(gameState.punter)
             niceMove(move)
             return move
@@ -39,12 +41,12 @@ class MathBot(override val name: String, punter: Int, punters: Int, map: BasicMa
         return null
     }
 
-    private fun getComp(): Comparator<Int> {
+    private fun getComp(): Comparator<River> {
         return if (time == Time.GATHER && cons.getGroups().size > gm.islands.size) {
             time = Time.SCATTER
-            UltimateComparator()
+            ScatterComparator()
         } else
-            UltimateComparator().reversed()
+            GatherComparator()
     }
 
     private fun niceMove(statedRiver: StatedRiver) {
@@ -53,16 +55,41 @@ class MathBot(override val name: String, punter: Int, punters: Int, map: BasicMa
         cons.addRiver(statedRiver.stateless())
     }
 
-    private inner class UltimateComparator : Comparator<Int> {
+    private inner class GatherComparator : Comparator<River> {
         private val comps = listOf(
-                Comparator.comparing<Int, Int> { gm.linearMetrics.siteCost(it) },
-                Comparator.comparing<Int, Int> { gm.squareMetrics.minSiteCost(it) }.reversed(),
-                Comparator.comparing<Int, Int> { gm.squareMetrics.siteCost(it) },
-                Comparator.comparing<Int, Int> { gm.squareMetrics.maxSiteCost(it) },
-                Comparator.comparing<Int, Int> { gm.connectionsMetrics[it] }.reversed()
+                Comparator.comparing<River, Int> {
+                    val delta = Math.abs(gm.squareMetrics.siteCost(it.source) - gm.squareMetrics.siteCost(it.target))
+                    if (delta == 0)
+                        Int.MAX_VALUE
+                    else
+                        delta
+                }.reversed(),
+                Comparator.comparing<River, Int> {
+                    Math.min(gm.connectionsMetrics[it.source], gm.connectionsMetrics[it.target])
+                }.reversed()
         )
 
-        override fun compare(o1: Int, o2: Int): Int {
+        override fun compare(o1: River, o2: River): Int {
+            for (comp in comps) {
+                val result = comp.compare(o1, o2)
+                if (result != 0)
+                    return result
+            }
+            return 0
+        }
+    }
+
+    private inner class ScatterComparator : Comparator<River> {
+        private val comps = listOf(
+                Comparator.comparing<River, Int> {
+                    Math.abs(gm.squareMetrics.siteCost(it.source) - gm.squareMetrics.siteCost(it.target))
+                },
+                Comparator.comparing<River, Int> {
+                    Math.min(gm.connectionsMetrics[it.source], gm.connectionsMetrics[it.target])
+                }.reversed()
+        )
+
+        override fun compare(o1: River, o2: River): Int {
             for (comp in comps) {
                 val result = comp.compare(o1, o2)
                 if (result != 0)

@@ -5,6 +5,8 @@ import com.dekinci.contest.entities.RiverStateID
 import com.dekinci.contest.entities.StatedRiver
 import com.dekinci.contest.game.map.graph.AdjacencyList
 import com.dekinci.contest.game.map.graph.AdjacencyMatrix
+import com.dekinci.contest.game.map.metric.ConnectionsMetrics
+import com.dekinci.contest.game.map.metric.DistanceMetrics
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet

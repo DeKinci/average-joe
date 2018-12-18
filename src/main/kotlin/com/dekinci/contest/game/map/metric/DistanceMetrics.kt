@@ -1,7 +1,8 @@
-package com.dekinci.contest.game.map
+package com.dekinci.contest.game.map.metric
 
 import com.dekinci.contest.common.Log.debug
 import com.dekinci.contest.entities.River
+import com.dekinci.contest.game.map.Cons
 import com.dekinci.contest.game.map.graph.AdjacencyList
 import com.dekinci.contest.game.map.graph.Dijkstra
 import kotlinx.coroutines.async
