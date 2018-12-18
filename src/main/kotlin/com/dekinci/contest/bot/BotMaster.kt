@@ -57,12 +57,13 @@ class BotMaster(connection: ServerConnection, botFactory: BotFactory) {
 
     private fun makeAMove() {
         val move = bot.getMove()
+
         debug("Move: $move")
         if (move == null)
             handlePass()
         else {
-            rectifier.pollute(move)
-            protocol.claimMove(move.target, move.source)
+            val polMove = rectifier.pollute(move)
+            protocol.claimMove(polMove.target, polMove.source)
         }
     }
 
